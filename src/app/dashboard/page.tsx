@@ -3,13 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
 import { listProblems } from "@/lib/problems/data";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
-export const metadata = { title: "Dashboard — Code Battle" };
+export const metadata = { title: "Dashboard — CodeBattle" };
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const user = await requireUser();
-
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("users")
@@ -32,186 +32,146 @@ export default async function DashboardPage() {
     .limit(10);
 
   const matches = (recentMatches ?? []) as unknown as {
-    id: string;
-    room_code: string | null;
-    status: string;
-    winner_id: string | null;
-    created_at: string;
-    problem_id: string;
-    problems: { title: string } | null;
+    id: string; room_code: string | null; status: string; winner_id: string | null;
+    created_at: string; problem_id: string; problems: { title: string } | null;
     match_players: { xp_gained: number | null; elo_after: number | null; player_id: string }[];
     submissions: { tests_passed: number | null; tests_total: number | null }[];
   }[];
 
   return (
-    <div className="mx-auto min-h-screen max-w-5xl px-6 py-8">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Welcome, <span className="text-emerald-400">{profile?.username ?? user.username}</span>
-          </h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Level {profile?.level ?? 1} · {profile?.elo ?? 1200} ELO
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen">
+      <Navbar>
+        {[
+          { href: "/leaderboard", label: "Leaderboard" },
+          { href: "/profile", label: "Profile" },
+          { href: "/history", label: "History" },
+        ].map((link) => (
           <Link
-            href="/history"
-            className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800"
+            key={link.href}
+            href={link.href}
+            className="px-4 py-2 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5"
           >
-            History
+            {link.label}
           </Link>
-          <Link
-            href="/profile"
-            className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800"
-          >
-            Profile
-          </Link>
-          <Link
-            href="/leaderboard"
-            className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800"
-          >
-            Leaderboard
-          </Link>
-          <form action={logout}>
-            <button
-              type="submit"
-              className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800"
-            >
-              Logout
-            </button>
-          </form>
-        </div>
-      </header>
+        ))}
+        <form action={logout}>
+          <button type="submit" className="px-4 py-2 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-[#ef4444]/30 hover:text-[#ef4444] hover:bg-[#ef4444]/5">
+            Logout
+          </button>
+        </form>
+      </Navbar>
 
-      {profile && (
-        <section className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Stat label="ELO" value={profile.elo} accent />
-          <Stat label="Level" value={profile.level} />
-          <Stat label="XP" value={profile.xp} />
-          <Stat label="Wins" value={profile.wins} />
-        </section>
-      )}
-
-      <section className="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/40 p-6">
-        <h2 className="text-lg font-semibold">Battle a friend</h2>
-        <p className="mt-1 text-sm text-neutral-400">
-          Create a room, share the code, and your opponent joins from anywhere.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link
-            href="/play"
-            className="rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-500"
-          >
-            Enter arena
-          </Link>
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8">
+        {/* User Info */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-emerald-500/20 bg-neutral-900 text-xl font-bold text-emerald-400" style={{ boxShadow: "0 0 20px rgba(34,197,94,0.1)" }}>
+            {(profile?.username ?? "?")[0]?.toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold">{profile?.username ?? user.username}</h1>
+            <p className="text-sm text-neutral-500">
+              Level {profile?.level ?? 1} · <span className="text-emerald-400">{profile?.elo ?? 1200} ELO</span>
+            </p>
+          </div>
         </div>
-      </section>
 
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg font-semibold">Problems</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {problems.map((p) => (
+        {/* Stats Row */}
+        {profile && (
+          <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
+            <Stat label="ELO" value={profile.elo} color="#22c55e" />
+            <Stat label="Level" value={profile.level} color="#f59e0b" />
+            <Stat label="XP" value={profile.xp} color="#22c55e" />
+            <Stat label="Wins" value={profile.wins} color="#f59e0b" />
+          </section>
+        )}
+
+        {/* CTA Banner */}
+        <section className="mt-8 rounded-xl border border-emerald-500/10 bg-neutral-900/60 p-6 backdrop-blur-sm" style={{ boxShadow: "0 0 30px rgba(34,197,94,0.05)" }}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-neutral-100">Ready to fight?</h2>
+              <p className="mt-1 text-sm text-neutral-400">Create a room, share the code, and your opponent joins.</p>
+            </div>
             <Link
-              key={p.id}
-              href={`/problem/${p.slug}`}
-              className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 transition-colors hover:border-neutral-600"
+              href="/play"
+              className="w-full sm:w-auto px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 text-center"
             >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-neutral-200">{p.title}</span>
-                <DifficultyBadge d={p.difficulty} />
-              </div>
-              <p className="mt-2 text-sm text-neutral-500">{p.category}</p>
+              Enter Arena
             </Link>
-          ))}
-        </div>
-      </section>
-
-      {matches.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-3 text-lg font-semibold">Recent battles</h2>
-          <div className="space-y-2">
-            {matches.map((m) => {
-              const mp = m.match_players?.[0];
-              const won = m.winner_id === user.userId;
-              const sub = m.submissions?.[0];
-              const solo = m.room_code === null;
-              return (
-                <div
-                  key={m.id}
-                  className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/40 px-4 py-3 text-sm"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`rounded px-2 py-0.5 text-xs font-semibold ${
-                          solo
-                            ? "bg-emerald-500/15 text-emerald-400"
-                            : "bg-amber-500/15 text-amber-400"
-                        }`}
-                      >
-                        {solo ? "SOLO" : "BATTLE"}
-                      </span>
-                      <span className="truncate font-medium text-neutral-200">
-                        {m.problems?.title ?? "Unknown problem"}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-neutral-500">
-                      {new Date(m.created_at).toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    {sub && (
-                      <span className="text-neutral-400">
-                        {sub.tests_passed ?? 0}/{sub.tests_total ?? 0}
-                      </span>
-                    )}
-                    {mp?.xp_gained != null && (
-                      <span className="text-emerald-400">+{mp.xp_gained} XP</span>
-                    )}
-                    {!solo && mp?.elo_after != null && (
-                      <span className={won ? "text-emerald-400" : "text-red-400"}>
-                        {won ? "W" : "L"}
-                      </span>
-                    )}
-                    {solo && (
-                      <span className="text-emerald-400">
-                        {mp?.xp_gained && mp.xp_gained > 0 ? "Solved" : "Attempted"}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </section>
-      )}
+
+        {/* Problems Grid */}
+        <section className="mt-10">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-neutral-500">Problems</h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {problems.map((p) => (
+              <Link
+                key={p.id}
+                href={`/problem/${p.slug}`}
+                className="group rounded-xl border border-neutral-800 bg-neutral-900/60 p-5 transition-all duration-300 hover:border-emerald-500/20 hover:bg-neutral-900"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-neutral-200 group-hover:text-emerald-400 transition-colors">{p.title}</span>
+                  <DifficultyBadge d={p.difficulty} />
+                </div>
+                <p className="mt-2 text-xs text-neutral-500">{p.category}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Recent Battles */}
+        {matches.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-neutral-500">Recent Battles</h2>
+            <div className="space-y-2">
+              {matches.map((m) => {
+                const mp = m.match_players?.[0];
+                const won = m.winner_id === user.userId;
+                const sub = m.submissions?.[0];
+                const solo = m.room_code === null;
+                return (
+                  <div key={m.id} className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 transition-all duration-200 hover:border-neutral-700">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`rounded-md px-2.5 py-1 text-xs font-bold ${solo ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20"}`}>
+                          {solo ? "SOLO" : "BATTLE"}
+                        </span>
+                        <span className="truncate font-medium text-neutral-200">{m.problems?.title ?? "Unknown"}</span>
+                      </div>
+                      <p className="mt-1.5 text-xs text-neutral-500">{new Date(m.created_at).toLocaleString()}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {sub && <span className="text-sm text-neutral-400">{sub.tests_passed ?? 0}/{sub.tests_total ?? 0}</span>}
+                      {mp?.xp_gained != null && <span className="text-sm font-bold text-emerald-400">+{mp.xp_gained} XP</span>}
+                      {!solo && mp?.elo_after != null && (
+                        <span className={`rounded-md px-2.5 py-1 text-xs font-bold ${won ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20"}`}>
+                          {won ? "WIN" : "LOSS"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: number | string; accent?: boolean }) {
+function Stat({ label, value, color }: { label: string; value: number | string; color: string }) {
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
-      <p className={`text-2xl font-bold ${accent ? "text-emerald-400" : "text-neutral-50"}`}>
-        {value}
-      </p>
-      <p className="mt-1 text-xs uppercase tracking-wide text-neutral-500">{label}</p>
+    <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-5 transition-all duration-200 hover:border-neutral-700">
+      <p className="text-3xl font-extrabold" style={{ color, textShadow: `0 0 20px ${color}40` }}>{value}</p>
+      <p className="mt-1.5 text-xs uppercase tracking-wide text-neutral-500 font-medium">{label}</p>
     </div>
   );
 }
 
 function DifficultyBadge({ d }: { d: string }) {
-  const color =
-    d === "easy"
-      ? "bg-emerald-500/15 text-emerald-400"
-      : d === "medium"
-      ? "bg-amber-500/15 text-amber-400"
-      : "bg-red-500/15 text-red-400";
-  return (
-    <span className={`rounded px-2 py-0.5 text-xs font-medium ${color}`}>
-      {d}
-    </span>
-  );
+  const cls = d === "easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : d === "medium" ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20";
+  return <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${cls}`}>{d}</span>;
 }

@@ -2,13 +2,9 @@ import { getProblemBySlug, getTestCases } from "@/lib/problems/data";
 import { requireUser } from "@/lib/auth/session";
 import Link from "next/link";
 
-export const metadata = { title: "Problem — Code Battle" };
+export const metadata = { title: "Problem — CodeBattle" };
 
-export default async function ProblemPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ProblemPage({ params }: { params: Promise<{ id: string }> }) {
   await requireUser();
   const { id } = await params;
   const problem = await getProblemBySlug(id);
@@ -17,9 +13,7 @@ export default async function ProblemPage({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4">
         <p className="text-neutral-400">Problem not found.</p>
-        <Link href="/dashboard" className="text-emerald-400 hover:underline">
-          Back to dashboard
-        </Link>
+        <Link href="/dashboard" className="text-emerald-400 hover:underline">Back to Dashboard</Link>
       </div>
     );
   }
@@ -28,64 +22,56 @@ export default async function ProblemPage({
   const samples = testCases.filter((t) => t.is_sample);
 
   return (
-    <div className="mx-auto min-h-screen max-w-3xl px-6 py-8">
-      <Link href="/dashboard" className="text-sm text-neutral-400 hover:text-neutral-200">
+    <div className="mx-auto min-h-screen max-w-3xl px-4 sm:px-6 py-8">
+      <Link href="/dashboard" className="px-5 py-2.5 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400">
         ← Dashboard
       </Link>
 
-      <div className="mt-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{problem.title}</h1>
+      <div className="mt-8 flex items-center justify-between">
+        <h1 className="text-3xl font-extrabold text-neutral-100">{problem.title}</h1>
         <DifficultyBadge d={problem.difficulty} />
       </div>
-      <p className="mt-1 text-sm text-neutral-500">{problem.category}</p>
+      <p className="mt-1 text-xs text-neutral-500">{problem.category}</p>
 
-      <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 text-sm leading-relaxed text-neutral-300">
+      <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-900/60 p-6 text-sm leading-relaxed text-neutral-300">
         {problem.description}
       </div>
 
       {problem.constraints && (
-        <div className="mt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Constraints
-          </h3>
+        <div className="mt-6">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-400/60">Constraints</h3>
           <p className="mt-2 text-sm text-neutral-400">{problem.constraints}</p>
         </div>
       )}
 
       {samples.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Examples
-          </h3>
-          <div className="mt-2 space-y-2">
+        <div className="mt-6">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-400/60">Examples</h3>
+          <div className="mt-3 space-y-2">
             {samples.map((t) => (
-              <div key={t.id} className="rounded bg-neutral-900 p-3 font-mono text-xs">
+              <div key={t.id} className="rounded-xl bg-black border border-neutral-800 p-4 font-mono text-xs">
                 <div className="text-neutral-500">Input</div>
                 <div className="text-neutral-200">{JSON.stringify(t.input)}</div>
-                <div className="mt-1 text-neutral-500">Output</div>
-                <div className="text-emerald-300">{JSON.stringify(t.expected_output)}</div>
+                <div className="mt-2 text-neutral-500">Output</div>
+                <div className="text-emerald-400">{JSON.stringify(t.expected_output)}</div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <pre className="mt-4 overflow-x-auto rounded-lg bg-neutral-950 p-4 font-mono text-sm text-emerald-300">
+      <pre className="mt-6 overflow-x-auto rounded-xl bg-black border border-neutral-800 p-5 font-mono text-sm text-emerald-400">
         {problem.starter_code}
       </pre>
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link
-          href={`/solo/${problem.slug}`}
-          className="inline-block rounded-lg bg-neutral-700 px-6 py-3 font-semibold text-white hover:bg-neutral-600"
-        >
-          Practice solo
+      <div className="mt-8 flex flex-col sm:flex-row gap-4">
+        <Link href={`/solo/${problem.slug}`}
+          className="px-8 py-3.5 text-base font-semibold rounded-xl border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5 text-center">
+          Practice Solo
         </Link>
-        <Link
-          href="/play"
-          className="inline-block rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-500"
-        >
-          Battle this problem
+        <Link href="/play"
+          className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-[1.02] text-center">
+          Battle This Problem
         </Link>
       </div>
     </div>
@@ -93,15 +79,6 @@ export default async function ProblemPage({
 }
 
 function DifficultyBadge({ d }: { d: string }) {
-  const color =
-    d === "easy"
-      ? "bg-emerald-500/15 text-emerald-400"
-      : d === "medium"
-      ? "bg-amber-500/15 text-amber-400"
-      : "bg-red-500/15 text-red-400";
-  return (
-    <span className={`rounded px-2 py-0.5 text-xs font-medium ${color}`}>
-      {d}
-    </span>
-  );
+  const cls = d === "easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : d === "medium" ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20";
+  return <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${cls}`}>{d}</span>;
 }

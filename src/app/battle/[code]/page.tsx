@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import LogoMark from "@/components/LogoMark";
 import type { TestRunResult } from "@/types";
 
 export default function BattlePage() {
@@ -240,24 +241,16 @@ export default function BattlePage() {
   if (error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-        <h1 className="text-xl font-semibold">Room {code}</h1>
+        <h1 className="text-xl font-bold" style={{ textShadow: "0 0 15px rgba(34,197,94,0.3)" }}>Room {code}</h1>
         <p className="text-neutral-400">{error}</p>
-        <button
-          onClick={() => router.push("/play")}
-          className="rounded-md bg-emerald-600 px-4 py-2 text-white"
-        >
-          Back to arena
-        </button>
+        <button onClick={() => router.push("/play")}
+          className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Arena</button>
       </div>
     );
   }
 
   if (!match || !problem) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-neutral-400">
-        Loading battle…
-      </div>
-    );
+    return <div className="flex min-h-screen items-center justify-center text-neutral-500">Loading battle…</div>;
   }
 
   const host = players.find((p) => p.is_host);
@@ -267,16 +260,10 @@ export default function BattlePage() {
   if (!amIParticipant) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-        <h1 className="text-xl font-semibold">Room {match.room_code}</h1>
-        <p className="text-neutral-400">
-          You are not a participant in this room.
-        </p>
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="rounded-md bg-emerald-600 px-4 py-2 text-white"
-        >
-          Back to dashboard
-        </button>
+        <h1 className="text-xl font-bold">Room {match.room_code}</h1>
+        <p className="text-neutral-400">You are not a participant in this room.</p>
+        <button onClick={() => router.push("/dashboard")}
+          className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Dashboard</button>
       </div>
     );
   }
@@ -315,83 +302,30 @@ export default function BattlePage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <TopBar
-        match={match}
-        isHost={isHost}
-        hasOpponent={players.length >= 2}
-        now={now}
-        countdownEnd={countdownEnd}
-        problemIndex={problemIndex}
-        problemCount={problemIds.length}
+      <TopBar match={match} isHost={isHost} hasOpponent={players.length >= 2} now={now} countdownEnd={countdownEnd}
+        problemIndex={problemIndex} problemCount={problemIds.length}
         myFinishedAt={players.find((p) => p.player_id === meId)?.finished_at ?? null}
-        onStart={isHost ? handleStart : undefined}
-        onQuit={handleQuit}
-      />
+        onStart={isHost ? handleStart : undefined} onQuit={handleQuit} />
       <div className="flex min-h-0 flex-1">
         <ProblemPanel problem={problem} testCases={testCases} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center gap-2 border-b border-neutral-800 bg-neutral-900/60 px-3 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Language
-            </span>
-            <Select
-              value={language}
-              onValueChange={(v) => handleLanguageChange(v as LanguageId)}
-            >
-              <SelectTrigger className="h-8 w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGES.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    {l.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+          <div className="flex items-center gap-3 border-b border-emerald-500/5 bg-black px-4 py-2.5">
+            <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">Language</span>
+            <Select value={language} onValueChange={(v) => handleLanguageChange(v as LanguageId)}>
+              <SelectTrigger className="h-9 w-44 rounded-lg border-neutral-700 bg-black text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>{LANGUAGES.map((l) => (<SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>))}</SelectContent>
             </Select>
           </div>
           <div className="min-h-0 flex-1">
-            <Editor
-              height="100%"
-              language={getLanguage(language).monaco}
-              theme="vs-dark"
-              value={code_}
-              onChange={(v) => setCode_(v ?? "")}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-              }}
-            />
+            <Editor height="100%" language={getLanguage(language).monaco} theme="vs-dark" value={code_} onChange={(v) => setCode_(v ?? "")}
+              options={{ minimap: { enabled: false }, fontSize: 14, scrollBeyondLastLine: false, automaticLayout: true }} />
           </div>
-          <ConsolePanel
-            runResult={runResult}
-            running={running}
-            submitting={submitting}
-            submitted={submittedCurrent}
-            status={match.status}
-            onRun={handleRun}
-            onSubmit={handleSubmit}
-            onNext={handleNext}
-            hasNext={problemIndex + 1 < problemIds.length}
-          />
+          <ConsolePanel runResult={runResult} running={running} submitting={submitting} submitted={submittedCurrent}
+            status={match.status} onRun={handleRun} onSubmit={handleSubmit} onNext={handleNext} hasNext={problemIndex + 1 < problemIds.length} />
         </div>
-        <OpponentPanel
-          players={players}
-          profiles={profiles}
-          submissions={submissions}
-          meId={meId!}
-          onAcceptDefeat={handleAcceptDefeat}
-        />
+        <OpponentPanel players={players} profiles={profiles} submissions={submissions} meId={meId!} onAcceptDefeat={handleAcceptDefeat} />
       </div>
-      {showQuitConfirm && (
-        <QuitConfirmModal
-          quitting={quitting}
-          onCancel={() => setShowQuitConfirm(false)}
-          onConfirm={handleConfirmQuit}
-        />
-      )}
+      {showQuitConfirm && <QuitConfirmModal quitting={quitting} onCancel={() => setShowQuitConfirm(false)} onConfirm={handleConfirmQuit} />}
     </div>
   );
 
@@ -543,50 +477,30 @@ function TopBar({
   const canStart = isHost && hasOpponent && (match.status === "waiting" || match.status === "matched");
 
   return (
-    <header className="flex items-center justify-between border-b border-neutral-800 bg-neutral-900/60 px-4 py-3">
+    <header className="flex items-center justify-between border-b border-emerald-500/10 bg-black px-4 py-3">
       <div className="flex items-center gap-3">
-        <span className="text-sm text-neutral-500">Room {match.room_code}</span>
-        {problemCount > 1 && (
-          <span className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-300">
-            Problem {problemIndex + 1}/{problemCount}
-          </span>
-        )}
-        {match.status === "countdown" && (
-          <span className="rounded bg-emerald-500/15 px-2 py-1 text-sm font-bold text-emerald-400">
-            {countdownRemaining}
-          </span>
-        )}
-        {!hasOpponent && isHost && (
-          <span className="rounded bg-amber-500/15 px-2 py-1 text-xs text-amber-300">
-            Waiting for opponent
-          </span>
-        )}
+        <LogoMark size="xs" />
+        <span className="text-xs font-mono text-neutral-500">ROOM</span>
+        <span className="font-mono text-sm font-bold text-emerald-400" style={{ textShadow: "0 0 10px rgba(34,197,94,0.3)" }}>{match.room_code}</span>
+        {problemCount > 1 && <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 text-xs font-bold">{problemIndex + 1}/{problemCount}</span>}
+        {match.status === "countdown" && <span className="text-2xl font-black text-emerald-400 animate-pulse" style={{ textShadow: "0 0 15px rgba(34,197,94,0.5)" }}>{countdownRemaining}</span>}
+        {!hasOpponent && isHost && <span className="rounded-md bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20 px-3 py-1.5 text-xs font-bold animate-pulse">WAITING</span>}
       </div>
-
-      <div className="text-2xl font-mono font-bold tracking-wider">
-        {match.status === "active" || match.status === "evaluating"
-          ? formatTime(elapsed)
-          : "--:--"}
+      <div className="text-2xl font-mono font-black tracking-wider text-emerald-400" style={{ textShadow: "0 0 15px rgba(34,197,94,0.3)" }}>
+        {match.status === "active" || match.status === "evaluating" ? formatTime(elapsed) : "--:--"}
       </div>
-
       <div className="flex items-center gap-3">
         {canStart && onStart && (
-          <button
-            onClick={onStart}
-            className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
-          >
-            Start match
+          <button onClick={onStart}
+            className="px-6 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
+            Start Match
           </button>
         )}
         {!hasOpponent && isHost && (
-          <span className="text-sm text-neutral-500">
-            Share code: <span className="font-mono text-emerald-400">{match.room_code}</span>
-          </span>
+          <span className="text-xs text-neutral-500">Share: <span className="font-mono font-bold text-emerald-400">{match.room_code}</span></span>
         )}
-        <button
-          onClick={onQuit}
-          className="rounded-md border border-neutral-700 px-3 py-2 text-sm text-neutral-400 hover:bg-neutral-800"
-        >
+        <button onClick={onQuit}
+          className="px-4 py-2.5 text-sm font-semibold rounded-lg border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5">
           Quit
         </button>
       </div>
@@ -594,66 +508,35 @@ function TopBar({
   );
 }
 
-function ProblemPanel({
-  problem,
-  testCases,
-}: {
-  problem: Problem;
-  testCases: TestCase[];
-}) {
+function ProblemPanel({ problem, testCases }: { problem: Problem; testCases: TestCase[] }) {
   return (
-    <aside className="w-80 min-h-0 shrink-0 overflow-y-auto border-r border-neutral-800 bg-neutral-900/30 p-4">
+    <aside className="w-80 min-h-0 shrink-0 overflow-y-auto border-r border-emerald-500/5 bg-black p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{problem.title}</h2>
+        <h2 className="text-lg font-bold text-neutral-100">{problem.title}</h2>
         <DifficultyBadge d={problem.difficulty} />
       </div>
-      <p className="mt-1 text-sm text-neutral-500">{problem.category}</p>
-      <div className="mt-4 text-sm leading-relaxed text-neutral-300">
-        <p>{problem.description}</p>
-      </div>
-
+      <p className="mt-1 text-xs text-neutral-500">{problem.category}</p>
+      <div className="mt-4 text-sm leading-relaxed text-neutral-300"><p>{problem.description}</p></div>
       {problem.constraints && (
-        <div className="mt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Constraints
-          </h3>
-          <p className="mt-2 text-sm text-neutral-400">{problem.constraints}</p>
-        </div>
+        <div className="mt-5"><h3 className="text-xs font-bold uppercase tracking-widest text-emerald-400/60">Constraints</h3><p className="mt-2 text-sm text-neutral-400">{problem.constraints}</p></div>
       )}
-
-      <div className="mt-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          Sample tests
-        </h3>
+      <div className="mt-5">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-400/60">Test Cases</h3>
         <div className="mt-2 space-y-2">
-          {testCases
-            .filter((t) => t.is_sample)
-            .map((t) => (
-              <div key={t.id} className="rounded bg-neutral-900 p-3 font-mono text-xs">
-                <div className="text-neutral-500">Input</div>
-                <div className="text-neutral-200">{JSON.stringify(t.input)}</div>
-                <div className="mt-1 text-neutral-500">Expected</div>
-                <div className="text-emerald-300">{JSON.stringify(t.expected_output)}</div>
-              </div>
-            ))}
+          {testCases.map((t) => (
+            <div key={t.id} className="rounded-lg bg-black border border-neutral-800 p-3 font-mono text-xs">
+              <div className="text-neutral-500">Input</div><div className="text-neutral-200">{JSON.stringify(t.input)}</div>
+              <div className="mt-1 text-neutral-500">Expected</div><div className="text-emerald-400">{JSON.stringify(t.expected_output)}</div>
+            </div>
+          ))}
         </div>
       </div>
     </aside>
   );
 }
 
-function OpponentPanel({
-  players,
-  profiles,
-  submissions,
-  meId,
-  onAcceptDefeat,
-}: {
-  players: MatchPlayerRow[];
-  profiles: Record<string, ProfileRow>;
-  submissions: SubmissionRow[];
-  meId: string;
-  onAcceptDefeat: () => void;
+function OpponentPanel({ players, profiles, submissions, meId, onAcceptDefeat }: {
+  players: MatchPlayerRow[]; profiles: Record<string, ProfileRow>; submissions: SubmissionRow[]; meId: string; onAcceptDefeat: () => void;
 }) {
   const host = players.find((p) => p.is_host);
   const guest = players.find((p) => !p.is_host);
@@ -663,36 +546,23 @@ function OpponentPanel({
   const iFinished = Boolean(mySlot?.finished_at);
 
   return (
-    <aside className="w-72 min-h-0 shrink-0 overflow-y-auto border-l border-neutral-800 bg-neutral-900/30 p-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-        Players
-      </h3>
-      <PlayerCard
-        label="You"
-        profile={mySlot ? profiles[mySlot.player_id] : undefined}
-        submission={mySlot ? submissions.find((s) => s.player_id === mySlot.player_id) : undefined}
-        finished={iFinished}
-      />
-      <div className="my-4 flex items-center gap-2 text-neutral-600">
-        <div className="h-px flex-1 bg-neutral-800" />
-        <span className="text-xs font-bold">VS</span>
-        <div className="h-px flex-1 bg-neutral-800" />
+    <aside className="w-72 min-h-0 shrink-0 overflow-y-auto border-l border-emerald-500/5 bg-black p-5">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500">Players</h3>
+      <PlayerCard label="YOU" profile={mySlot ? profiles[mySlot.player_id] : undefined}
+        submission={mySlot ? submissions.find((s) => s.player_id === mySlot.player_id) : undefined} finished={iFinished} isMe />
+      <div className="my-4 flex items-center gap-2">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+        <span className="text-xs font-black text-emerald-400" style={{ textShadow: "0 0 8px rgba(34,197,94,0.4)" }}>VS</span>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
       </div>
-      <PlayerCard
-        label={oppSlot ? "Opponent" : "Waiting…"}
-        profile={oppSlot ? profiles[oppSlot.player_id] : undefined}
-        submission={oppSlot ? submissions.find((s) => s.player_id === oppSlot.player_id) : undefined}
-        finished={oppFinished}
-      />
-
+      <PlayerCard label={oppSlot ? "OPPONENT" : "WAITING…"} profile={oppSlot ? profiles[oppSlot.player_id] : undefined}
+        submission={oppSlot ? submissions.find((s) => s.player_id === oppSlot.player_id) : undefined} finished={oppFinished} />
       {oppFinished && !iFinished && (
-        <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-center">
-          <p className="text-sm text-amber-300">Your opponent finished all problems.</p>
-          <button
-            onClick={onAcceptDefeat}
-            className="mt-3 w-full rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
-          >
-            Accept defeat
+        <div className="mt-4 rounded-xl border border-[#f59e0b]/30 bg-[#f59e0b]/5 p-4 text-center">
+          <p className="text-sm text-[#f59e0b] font-semibold">Opponent finished!</p>
+          <button onClick={onAcceptDefeat}
+            className="mt-3 w-full py-2.5 text-sm font-bold rounded-xl border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5">
+            Accept Defeat
           </button>
         </div>
       )}
@@ -700,173 +570,92 @@ function OpponentPanel({
   );
 }
 
-function PlayerCard({
-  label,
-  profile,
-  submission,
-  finished,
-}: {
-  label: string;
-  profile?: ProfileRow;
-  submission?: SubmissionRow;
-  finished?: boolean;
+function PlayerCard({ label, profile, submission, finished, isMe }: {
+  label: string; profile?: ProfileRow; submission?: SubmissionRow; finished?: boolean; isMe?: boolean;
 }) {
   return (
-    <div className="mt-3 rounded-lg border border-neutral-800 bg-neutral-900/60 p-3">
-      <p className="text-xs uppercase tracking-wide text-neutral-500">{label}</p>
-      <div className="mt-2 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-black">
+    <div className={`mt-3 rounded-xl p-4 transition-all duration-200 ${isMe ? "border border-emerald-500/20 bg-emerald-500/5" : "border border-neutral-800 bg-neutral-900/60"}`}>
+      <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</p>
+      <div className="mt-2.5 flex items-center gap-3">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${isMe ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500/20 text-emerald-400"}`}>
           {(profile?.username ?? "?")[0]?.toUpperCase()}
         </div>
         <div className="min-w-0">
-          <p className="truncate font-medium text-neutral-200">{profile?.username ?? "—"}</p>
-          <p className="text-sm text-neutral-500">{profile?.elo ?? "—"} ELO</p>
+          <p className="truncate font-semibold text-neutral-200">{profile?.username ?? "—"}</p>
+          <p className="text-xs text-neutral-500">{profile?.elo ?? "—"} ELO</p>
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2 text-sm">
         {submission ? (
-          <>
-            <span className="text-emerald-400">Submitted</span>
-            <span className="text-neutral-500">
-              {submission.tests_passed ?? 0}/{submission.tests_total ?? 0}
-            </span>
-          </>
-        ) : (
-          <span className="text-neutral-500">No submission yet</span>
-        )}
+          <><span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-xs font-bold">Submitted</span>
+          <span className="text-xs text-neutral-400">{submission.tests_passed ?? 0}/{submission.tests_total ?? 0}</span></>
+        ) : <span className="text-xs text-neutral-600">No submission yet</span>}
       </div>
-      {finished && (
-        <div className="mt-2 text-xs font-semibold text-emerald-400">
-          ✓ Finished all problems
-        </div>
-      )}
+      {finished && <div className="mt-2 text-xs font-bold text-emerald-400">✓ FINISHED</div>}
     </div>
   );
 }
 
-function ConsolePanel({
-  runResult,
-  running,
-  submitting,
-  submitted,
-  status,
-  onRun,
-  onSubmit,
-  onNext,
-  hasNext,
-}: {
-  runResult: TestRunResult | null;
-  running: boolean;
-  submitting: boolean;
-  submitted: boolean;
-  status: string;
-  onRun: () => void;
-  onSubmit: () => void;
-  onNext: () => void;
-  hasNext: boolean;
+function ConsolePanel({ runResult, running, submitting, submitted, status, onRun, onSubmit, onNext, hasNext }: {
+  runResult: TestRunResult | null; running: boolean; submitting: boolean; submitted: boolean; status: string;
+  onRun: () => void; onSubmit: () => void; onNext: () => void; hasNext: boolean;
 }) {
   const canAct = status === "active" || status === "evaluating";
   return (
-    <div className="h-48 border-t border-neutral-800 bg-neutral-950">
-      <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          Test results
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={onRun}
-            disabled={!canAct || running || submitted}
-            className="rounded bg-neutral-800 px-4 py-1.5 text-sm font-medium text-neutral-200 hover:bg-neutral-700 disabled:opacity-50"
-          >
+    <div className="h-52 border-t border-emerald-500/5 bg-black">
+      <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2.5">
+        <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">Test Results</span>
+        <div className="flex gap-3">
+          <button onClick={onRun} disabled={!canAct || running || submitted}
+            className="px-5 py-2 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-40">
             {running ? "Running…" : "Run"}
           </button>
           {submitted ? (
             hasNext ? (
-              <button
-                onClick={onNext}
-                className="rounded bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-500"
-              >
-                Next problem
-              </button>
-            ) : (
-              <span className="rounded bg-emerald-600/20 px-4 py-1.5 text-sm font-semibold text-emerald-400">
-                Finished
-              </span>
-            )
+              <button onClick={onNext}
+                className="px-5 py-2 text-sm font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Next Problem</button>
+            ) : <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-5 py-2 text-sm font-bold">Finished</span>
           ) : (
-            <button
-              onClick={onSubmit}
-              disabled={!canAct || submitting}
-              className="rounded bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
-            >
+            <button onClick={onSubmit} disabled={!canAct || submitting}
+              className="px-5 py-2 text-sm font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 disabled:opacity-40 disabled:hover:scale-100">
               {submitting ? "Submitting…" : "Submit"}
             </button>
           )}
         </div>
       </div>
       <div className="overflow-y-auto p-4 font-mono text-xs">
-        {runResult?.error ? (
-          <p className="text-red-400">{runResult.error}</p>
-        ) : runResult ? (
+        {runResult?.error ? <p className="text-[#ef4444]">{runResult.error}</p> : runResult ? (
           <div>
-            <p className={runResult.testsPassed === runResult.testsTotal ? "text-emerald-400" : "text-amber-400"}>
-              {runResult.testsPassed}/{runResult.testsTotal} passed
-            </p>
+            <p className={runResult.testsPassed === runResult.testsTotal ? "text-emerald-400 font-bold" : "text-[#f59e0b]"}>{runResult.testsPassed}/{runResult.testsTotal} passed</p>
             <div className="mt-2 space-y-1">
               {runResult.results.map((r, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className={r.pass ? "text-emerald-400" : "text-red-400"}>
-                    {r.pass ? "✓" : "✗"}
-                  </span>
-                  <span className="text-neutral-400">
-                    {JSON.stringify(r.input)} → {JSON.stringify(r.actual)}
-                    {r.error ? ` (${r.error})` : ""}
-                  </span>
+                  <span className={r.pass ? "text-emerald-400" : "text-[#ef4444]"}>{r.pass ? "✓" : "✗"}</span>
+                  <span className="text-neutral-400">{JSON.stringify(r.input)} → {JSON.stringify(r.actual)}{r.error ? ` (${r.error})` : ""}</span>
                 </div>
               ))}
             </div>
           </div>
-        ) : (
-          <p className="text-neutral-600">
-            Press Run to test your solution against the sample cases.
-          </p>
-        )}
+        ) : <p className="text-neutral-600">Press Run to test your solution.</p>}
       </div>
     </div>
   );
 }
 
-function QuitConfirmModal({
-  quitting,
-  onCancel,
-  onConfirm,
-}: {
-  quitting: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
+function QuitConfirmModal({ quitting, onCancel, onConfirm }: { quitting: boolean; onCancel: () => void; onConfirm: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-700 bg-neutral-900 p-6 text-center shadow-2xl">
-        <h2 className="text-lg font-semibold text-neutral-100">Quit the battle?</h2>
-        <p className="mt-2 text-sm text-neutral-400">
-          If you quit now, you will be counted as the loser and your opponent
-          will win the match.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <button
-            onClick={onCancel}
-            disabled={quitting}
-            className="flex-1 rounded-md border border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-300 hover:bg-neutral-800 disabled:opacity-50"
-          >
-            Keep coding
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="w-full max-w-sm rounded-2xl border border-neutral-700 bg-neutral-900 p-8 text-center" style={{ boxShadow: "0 0 40px rgba(0,0,0,0.5)" }}>
+        <h2 className="text-xl font-bold text-neutral-100">Quit the Battle?</h2>
+        <p className="mt-3 text-sm text-neutral-400">You will be counted as the loser and your opponent wins.</p>
+        <div className="mt-8 flex gap-4">
+          <button onClick={onCancel} disabled={quitting}
+            className="flex-1 py-3 text-sm font-semibold rounded-xl border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+            Keep Coding
           </button>
-          <button
-            onClick={onConfirm}
-            disabled={quitting}
-            className="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 disabled:opacity-50"
-          >
-            {quitting ? "Quitting…" : "Quit & forfeit"}
+          <button onClick={onConfirm} disabled={quitting}
+            className="flex-1 py-3 text-sm font-bold rounded-xl border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5 disabled:opacity-50">
+            {quitting ? "Quitting…" : "Forfeit"}
           </button>
         </div>
       </div>
@@ -874,16 +663,8 @@ function QuitConfirmModal({
   );
 }
 
-function WaitingScreen({
-  players,
-  profiles,
-  meId,
-  onQuit,
-}: {
-  players: MatchPlayerRow[];
-  profiles: Record<string, ProfileRow>;
-  meId: string;
-  onQuit: () => void;
+function WaitingScreen({ players, profiles, meId, onQuit }: {
+  players: MatchPlayerRow[]; profiles: Record<string, ProfileRow>; meId: string; onQuit: () => void;
 }) {
   const opp = players.find((p) => p.player_id !== meId);
   const oppProfile = opp ? profiles[opp.player_id] : undefined;
@@ -891,49 +672,27 @@ function WaitingScreen({
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-600/20">
-        <span className="text-3xl">🏁</span>
+      <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-emerald-500/20 bg-neutral-900" style={{ boxShadow: "0 0 30px rgba(34,197,94,0.1)", animation: "pulse 2s ease-in-out infinite" }}>
+        <span className="text-4xl">🏁</span>
       </div>
       <div>
-        <h1 className="text-2xl font-bold text-neutral-100">You finished all problems!</h1>
-        <p className="mt-2 text-neutral-400">
-          Waiting for {oppProfile?.username ?? "your opponent"} to finish…
-        </p>
+        <h1 className="text-3xl font-extrabold text-emerald-400" style={{ textShadow: "0 0 20px rgba(34,197,94,0.4)" }}>You finished!</h1>
+        <p className="mt-3 text-neutral-400">Waiting for {oppProfile?.username ?? "your opponent"} to finish…</p>
       </div>
-
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900/60 px-4 py-2">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-          <span className="text-sm text-neutral-300">
-            {oppFinished ? "Opponent finished — tallying results…" : "Opponent is still coding"}
-          </span>
-        </div>
+      <div className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-3">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e] animate-pulse" />
+        <span className="text-sm text-neutral-300">{oppFinished ? "Tallying results…" : "Opponent is still coding"}</span>
       </div>
-
-      <button
-        onClick={onQuit}
-        className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800"
-      >
+      <button onClick={onQuit}
+        className="px-6 py-2.5 text-sm font-semibold rounded-xl border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5">
         Quit
       </button>
     </div>
   );
 }
 
-function ResultPopup({
-  match,
-  players,
-  profiles,
-  submissions,
-  meId,
-  onExit,
-}: {
-  match: MatchRow;
-  players: MatchPlayerRow[];
-  profiles: Record<string, ProfileRow>;
-  submissions: SubmissionRow[];
-  meId: string;
-  onExit: () => void;
+function ResultPopup({ match, players, profiles, submissions, meId, onExit }: {
+  match: MatchRow; players: MatchPlayerRow[]; profiles: Record<string, ProfileRow>; submissions: SubmissionRow[]; meId: string; onExit: () => void;
 }) {
   const iWon = match.winner_id === meId;
   const me = profiles[meId];
@@ -947,98 +706,52 @@ function ResultPopup({
   const myTotal = mySubs.reduce((s, x) => s + (x.tests_total ?? 0), 0);
   const oppPassed = oppSubs.reduce((s, x) => s + (x.tests_passed ?? 0), 0);
   const oppTotal = oppSubs.reduce((s, x) => s + (x.tests_total ?? 0), 0);
-
-  const myTime = myPlayer?.finished_at
-    ? Math.max(0, (new Date(myPlayer.finished_at).getTime() - new Date(match.starts_at ?? myPlayer.finished_at).getTime()) / 1000)
-    : null;
-  const oppTime = oppPlayer?.finished_at
-    ? Math.max(0, (new Date(oppPlayer.finished_at).getTime() - new Date(match.starts_at ?? oppPlayer.finished_at).getTime()) / 1000)
-    : null;
+  const myTime = myPlayer?.finished_at ? Math.max(0, (new Date(myPlayer.finished_at).getTime() - new Date(match.starts_at ?? myPlayer.finished_at).getTime()) / 1000) : null;
+  const oppTime = oppPlayer?.finished_at ? Math.max(0, (new Date(oppPlayer.finished_at).getTime() - new Date(match.starts_at ?? oppPlayer.finished_at).getTime()) / 1000) : null;
 
   return (
-    <div className="w-full max-w-lg rounded-2xl border border-neutral-700 bg-neutral-900 p-8 text-center shadow-2xl">
-      <h1 className={`text-4xl font-extrabold ${iWon ? "text-emerald-400" : match.winner_id ? "text-red-400" : "text-neutral-300"}`}>
-        {iWon ? "YOU WON" : match.winner_id ? "YOU LOST" : "DRAW"}
+    <div className="w-full max-w-lg rounded-2xl border border-emerald-500/20 bg-neutral-900 p-8 text-center" style={{ boxShadow: "0 0 50px rgba(34,197,94,0.1)" }}>
+      <h1 className={`text-5xl font-extrabold ${iWon ? "text-emerald-400" : match.winner_id ? "text-[#ef4444]" : "text-neutral-300"}`}
+        style={iWon ? { textShadow: "0 0 25px rgba(34,197,94,0.5)" } : match.winner_id ? { textShadow: "0 0 25px rgba(239,68,68,0.4)" } : undefined}>
+        {iWon ? "VICTORY" : match.winner_id ? "DEFEAT" : "DRAW"}
       </h1>
-      <p className="mt-2 text-neutral-400">
-        {oppProfile?.username ?? "Opponent"} · {oppProfile?.elo ?? "—"} ELO
-      </p>
-
+      <p className="mt-2 text-neutral-400">vs {oppProfile?.username ?? "Opponent"} · {oppProfile?.elo ?? "—"} ELO</p>
       <div className="mt-8 space-y-3">
-        <ResultRow
-          label="You"
-          username={me?.username ?? "You"}
-          passed={myPassed}
-          total={myTotal}
-          time={myTime}
-          xp={myPlayer?.xp_gained ?? null}
-          highlight={iWon}
-        />
-        <ResultRow
-          label="Opponent"
-          username={oppProfile?.username ?? "Opponent"}
-          passed={oppPassed}
-          total={oppTotal}
-          time={oppTime}
-          xp={oppPlayer?.xp_gained ?? null}
-          highlight={!iWon && Boolean(match.winner_id)}
-        />
+        <ResultRow label="YOU" username={me?.username ?? "You"} passed={myPassed} total={myTotal} time={myTime} xp={myPlayer?.xp_gained ?? null} highlight={iWon} />
+        <ResultRow label="OPPONENT" username={oppProfile?.username ?? "Opponent"} passed={oppPassed} total={oppTotal} time={oppTime} xp={oppPlayer?.xp_gained ?? null} highlight={!iWon && Boolean(match.winner_id)} />
       </div>
-
-      <button
-        onClick={onExit}
-        className="mt-8 rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-500"
-      >
-        Back to dashboard
+      <button onClick={onExit}
+        className="mt-8 w-full py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
+        Back to Dashboard
       </button>
     </div>
   );
 }
 
-function ResultRow({
-  label,
-  username,
-  passed,
-  total,
-  time,
-  xp,
-  highlight,
-}: {
-  label: string;
-  username: string;
-  passed: number;
-  total: number;
-  time: number | null;
-  xp: number | null;
-  highlight: boolean;
+function ResultRow({ label, username, passed, total, time, xp, highlight }: {
+  label: string; username: string; passed: number; total: number; time: number | null; xp: number | null; highlight: boolean;
 }) {
   return (
-    <div
-      className={`rounded-lg border p-4 text-left ${
-        highlight ? "border-emerald-500/50 bg-emerald-500/10" : "border-neutral-800 bg-neutral-900/40"
-      }`}
-    >
+    <div className={`rounded-xl border p-5 text-left ${highlight ? "border-emerald-500/30 bg-emerald-500/5" : "border-neutral-800 bg-neutral-900/60"}`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-neutral-500">{label}</p>
-          <p className="font-medium text-neutral-200">{username}</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</p>
+          <p className="font-semibold text-neutral-200">{username}</p>
         </div>
-        {highlight && <span className="text-xs font-bold text-emerald-400">WINNER</span>}
+        {highlight && <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 text-xs font-bold">WINNER</span>}
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
         <div>
-          <p className="text-lg font-bold text-neutral-100">
-            {passed}/{total}
-          </p>
-          <p className="text-xs text-neutral-500">Tests</p>
+          <p className="text-xl font-bold text-neutral-100">{passed}/{total}</p>
+          <p className="text-xs text-neutral-500 font-medium">Tests</p>
         </div>
         <div>
-          <p className="text-lg font-bold text-neutral-100">{time != null ? formatTime(time) : "—"}</p>
-          <p className="text-xs text-neutral-500">Time</p>
+          <p className="text-xl font-bold text-neutral-100">{time != null ? formatTime(time) : "—"}</p>
+          <p className="text-xs text-neutral-500 font-medium">Time</p>
         </div>
         <div>
-          <p className="text-lg font-bold text-emerald-400">{xp != null ? `+${xp}` : "—"}</p>
-          <p className="text-xs text-neutral-500">XP</p>
+          <p className="text-xl font-bold text-emerald-400">{xp != null ? `+${xp}` : "—"}</p>
+          <p className="text-xs text-neutral-500 font-medium">XP</p>
         </div>
       </div>
     </div>
@@ -1046,17 +759,8 @@ function ResultRow({
 }
 
 function DifficultyBadge({ d }: { d: string }) {
-  const color =
-    d === "easy"
-      ? "bg-emerald-500/15 text-emerald-400"
-      : d === "medium"
-      ? "bg-amber-500/15 text-amber-400"
-      : "bg-red-500/15 text-red-400";
-  return (
-    <span className={`rounded px-2 py-0.5 text-xs font-medium ${color}`}>
-      {d}
-    </span>
-  );
+  const cls = d === "easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : d === "medium" ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20";
+  return <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${cls}`}>{d}</span>;
 }
 
 function formatTime(seconds: number) {

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createMatch, joinMatch } from "@/app/match/actions";
 import { listProblemsClient, type Problem } from "@/lib/problems/client-data";
 import { useEffect } from "react";
+import Link from "next/link";
+import LogoMark from "@/components/LogoMark";
 import {
   Select,
   SelectContent,
@@ -30,9 +32,7 @@ export default function Play() {
   }, []);
 
   function toggleBattle(id: string) {
-    setBattleProblems((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setBattleProblems((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
   async function handleCreate() {
@@ -40,85 +40,81 @@ export default function Play() {
     setBusy(true);
     setError(null);
     const res = await createMatch(battleProblems);
-    if ("error" in res) {
-      setError(res.error);
-      setBusy(false);
-      return;
-    }
+    if ("error" in res) { setError(res.error); setBusy(false); return; }
     router.push(`/battle/${res.code}`);
   }
 
   async function handleJoin() {
     if (busy) return;
     const normalized = code.trim().toUpperCase();
-    if (!normalized) {
-      setError("Enter a room code.");
-      return;
-    }
+    if (!normalized) { setError("Enter a room code."); return; }
     setBusy(true);
     setError(null);
     const res = await joinMatch(normalized);
-    if ("error" in res) {
-      setError(res.error);
-      setBusy(false);
-      return;
-    }
+    if ("error" in res) { setError(res.error); setBusy(false); return; }
     router.push(`/battle/${res.code}`);
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6">
-      <div className="w-full max-w-md space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Enter the arena</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Practice solo, or battle a friend.
-          </p>
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-4 sm:px-6">
+      <Link href="/" className="absolute top-6 left-6 flex items-center gap-3 group">
+        <LogoMark size="sm" className="group-hover:border-emerald-500/40 group-hover:shadow-[0_0_20px_rgba(34,197,94,0.2)] transition-all duration-300" />
+        <span className="text-xl font-extrabold tracking-tight">
+          <span className="text-neutral-100">Code</span>
+          <span className="text-emerald-400">Battle</span>
+        </span>
+      </Link>
+
+      <div className="pointer-events-none absolute -top-40 right-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-[120px]" />
+
+      <div className="relative z-10 w-full max-w-md space-y-5">
+        <div className="text-center mb-2">
+          <h1 className="text-4xl font-extrabold">
+            <span className="text-emerald-400" style={{ textShadow: "0 0 20px rgba(34,197,94,0.4)" }}>Arena</span>
+          </h1>
+          <p className="mt-2 text-sm text-neutral-400">Choose your battle mode</p>
         </div>
 
-        {/* SOLO — single select */}
-        <div className="space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/40 p-5">
-          <h2 className="text-sm font-semibold text-neutral-300">Solo</h2>
-          <p className="text-sm text-neutral-500">
-            Solve one problem on your own.
-          </p>
+        {/* SOLO */}
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6">
+          <div className="mb-4 flex items-center gap-2.5">
+            <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-xs font-bold">SOLO</span>
+            <h2 className="text-base font-bold text-neutral-200">Practice Mode</h2>
+          </div>
+          <p className="text-sm text-neutral-500">Solve a single problem on your own.</p>
           <Select value={soloProblem} onValueChange={setSoloProblem}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="mt-4 w-full rounded-lg border-neutral-700 bg-black py-3 text-sm">
               <SelectValue placeholder="Select a problem" />
             </SelectTrigger>
             <SelectContent>
               {problems.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.title} · {p.difficulty}
-                </SelectItem>
+                <SelectItem key={p.id} value={p.id}>{p.title} · {p.difficulty}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <button
             onClick={() => soloProblem && router.push(`/solo/${soloProblem}`)}
-            className="w-full rounded-lg bg-neutral-700 py-3 font-semibold text-white hover:bg-neutral-600"
+            className="mt-4 w-full py-3.5 text-base font-bold rounded-xl border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5"
           >
-            Start solo
+            Start Solo
           </button>
         </div>
 
-        {/* BATTLE — multi select */}
-        <div className="space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/40 p-5">
-          <h2 className="text-sm font-semibold text-neutral-300">Battle</h2>
-          <p className="text-sm text-neutral-500">
-            Pick one or more problems. Both players solve them in sequence.
-          </p>
-          <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border border-neutral-800 p-2">
+        {/* BATTLE */}
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6">
+          <div className="mb-4 flex items-center gap-2.5">
+            <span className="rounded-md bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20 px-2.5 py-1 text-xs font-bold">BATTLE</span>
+            <h2 className="text-base font-bold text-neutral-200">1v1 Duel</h2>
+          </div>
+          <p className="text-sm text-neutral-500">Pick problems. Both players solve them in sequence.</p>
+          <div className="mt-4 max-h-48 space-y-1 overflow-y-auto rounded-lg border border-neutral-800 bg-black p-3">
             {problems.map((p) => (
-              <label
-                key={p.id}
-                className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm text-neutral-200 hover:bg-neutral-800"
-              >
+              <label key={p.id} className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-200 hover:bg-emerald-500/5 transition-colors">
                 <input
                   type="checkbox"
                   checked={battleProblems.includes(p.id)}
                   onChange={() => toggleBattle(p.id)}
-                  className="h-4 w-4 accent-emerald-500"
+                  className="h-4 w-4 rounded accent-emerald-500"
                 />
                 <span className="truncate">{p.title}</span>
                 <span className="ml-auto text-xs text-neutral-500">{p.difficulty}</span>
@@ -128,40 +124,43 @@ export default function Play() {
           <button
             onClick={handleCreate}
             disabled={busy || battleProblems.length === 0}
-            className="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+            className="mt-4 w-full py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100"
           >
-            {busy ? "Creating…" : `Create room (${battleProblems.length})`}
+            {busy ? "Creating…" : `Create Room (${battleProblems.length})`}
           </button>
         </div>
 
-        <div className="flex items-center gap-3 text-neutral-600">
-          <div className="h-px flex-1 bg-neutral-800" />
-          <span className="text-xs uppercase">or join</span>
-          <div className="h-px flex-1 bg-neutral-800" />
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+          <span className="text-xs font-bold uppercase tracking-widest text-neutral-600">or join</span>
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
         </div>
 
-        <div className="space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/40 p-5">
-          <h2 className="text-sm font-semibold text-neutral-300">Join a room</h2>
+        {/* JOIN */}
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6">
+          <h2 className="mb-4 text-base font-bold text-neutral-200">Join a Room</h2>
           <input
             value={code}
-            onChange={(e) => {
-              setCode(e.target.value.toUpperCase());
-              setError(null);
-            }}
-            placeholder="Room code (e.g. AB72K9)"
+            onChange={(e) => { setCode(e.target.value.toUpperCase()); setError(null); }}
+            placeholder="ROOM CODE"
             maxLength={6}
-            className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-4 py-3 text-center text-lg tracking-widest text-neutral-100 uppercase outline-none focus:border-emerald-500"
+            className="w-full rounded-lg border border-neutral-700 bg-black px-4 py-3.5 text-center text-lg tracking-[0.3em] font-mono text-neutral-100 outline-none transition-all duration-200 focus:border-emerald-500/40 focus:shadow-[0_0_15px_rgba(34,197,94,0.1)]"
           />
           <button
             onClick={handleJoin}
             disabled={busy}
-            className="w-full rounded-lg border border-neutral-700 py-3 font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-60"
+            className="mt-4 w-full py-3.5 text-base font-bold rounded-xl border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5 disabled:opacity-40"
           >
-            {busy ? "Joining…" : "Join room"}
+            {busy ? "Joining…" : "Join Room"}
           </button>
         </div>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && (
+          <p className="rounded-xl border border-[#ef4444]/20 bg-[#ef4444]/5 p-4 text-center text-sm text-[#ef4444]">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );

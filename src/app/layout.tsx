@@ -2,19 +2,17 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Code Battle",
-  description:
-    "Practice coding interviews by competing against real developers.",
+  title: "CodeBattle",
+  description: "Real-time competitive coding battles. Challenge developers worldwide.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full bg-[#0a0a0f] text-neutral-100">
+    <html lang="en" className="h-full">
+      <body className="min-h-full bg-black text-neutral-100 antialiased">
         {children}
       </body>
     </html>
