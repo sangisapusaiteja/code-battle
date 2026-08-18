@@ -24,6 +24,8 @@ create table if not exists public.users (
   problems_solved   int  not null default 0,
   avg_solve_seconds int  not null default 0,
   best_category     text,
+  role              text not null default 'user'
+                      check (role in ('user','admin')),
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );

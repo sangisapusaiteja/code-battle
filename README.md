@@ -208,6 +208,7 @@ erDiagram
         int level
         int wins
         int losses
+        text role
         timestamptz created_at
         timestamptz updated_at
     }
@@ -293,7 +294,7 @@ erDiagram
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Shared identity table (username + bcrypt hash, Elo, XP, streaks). |
+| `users` | Shared identity table (username + bcrypt hash, Elo, XP, streaks, role). |
 | `problems` | Coding problems with difficulty, category, constraints, starter code. |
 | `problem_test_cases` | Input/output test cases per problem. |
 | `matches` | Battle state machine (`waiting → matched → countdown → active → evaluating → finished`). |
