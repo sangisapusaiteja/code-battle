@@ -100,6 +100,99 @@ If a player concedes, the opponent is awarded the win. Solo practice creates a s
 
 ---
 
+## Architecture
+
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        UI[Next.js 16 App Router]
+        Pages[Pages & Routes]
+        BattleUI[Realtime Battle UI]
+        Monaco[Monaco Editor]
+    end
+
+    subgraph "Server Actions"
+        AuthActions[Auth Actions]
+        MatchActions[Match Actions]
+        SoloActions[Solo Practice]
+        Finalize[finalize_match]
+    end
+
+    subgraph "Data Layer"
+        Problems[Problem Data]
+        Runner[Sandboxed Code Runner]
+        ClientData[Realtime Client Data]
+    end
+
+    subgraph "External Services"
+        Supabase[(Supabase)]
+        Realtime[Supabase Realtime]
+        Pyodide[Pyodide]
+    end
+
+    UI --> Pages --> BattleUI
+    BattleUI --> Monaco
+    BattleUI --> ClientData
+    Pages --> AuthActions & MatchActions & SoloActions
+    MatchActions --> Finalize
+    Finalize --> Supabase
+    AuthActions --> Supabase
+    SoloActions --> Supabase
+    ClientData --> Realtime
+    Realtime --> Supabase
+    Runner --> Pyodide
+    Runner --> Problems
+```
+
+### Request Flow
+
+```mermaid
+sequenceDiagram
+    participant Host
+    participant Guest
+    participant Next as Next.js Server
+    participant Supa as Supabase
+    participant RT as Supabase Realtime
+
+    Host->>Next: createMatch(problemIds)
+    Next->>Supa: insert match + match_problems + match_players
+    Next-->>Host: room code
+
+    Guest->>Next: joinMatch(code)
+    Next->>Supa: insert match_players, transition waiting→matched
+    Next-->>Guest: joined
+
+    Host->>Next: startMatch(matchId)
+    Next->>Supa: transition matched→countdown
+    RT-->>Host: countdown started
+    RT-->>Guest: countdown started
+
+    Host->>Next: beginActive(matchId)
+    Next->>Supa: transition countdown→active, start timers
+    RT-->>Host: active
+    RT-->>Guest: active
+
+    Host->>Next: submitSolution(...)
+    Next->>Supa: insert submission, advance_player
+    RT-->>Guest: host submitted
+
+    Guest->>Next: submitSolution(...)
+    Next->>Supa: both finished → finalize_match
+    Next->>Supa: compute Elo/XP, write ratings ledger
+    RT-->>Host: finished + result
+    RT-->>Guest: finished + result
+```
+
+### Key Design Decisions
+
+- **Server-authoritative outcomes.** Match results, Elo, and XP are computed only by `SECURITY DEFINER` Postgres functions — the client can never forge a win or edit its rating.
+- **Realtime state machine.** The match lifecycle (`waiting → matched → countdown → active → finished`) is driven by Supabase Realtime subscriptions, so both players stay in sync without polling.
+- **Sandboxed execution.** User code runs in an isolated `new Function` scope (no DOM, no `localStorage`, no network) with a per-test timeout; Python runs in-browser via Pyodide.
+- **Race-safe submissions.** A unique partial index allows only one final submission per player per problem, so simultaneous submits can't double-score.
+- **Shared identity.** The `users` table is shared with **Interview Handbook**, so a single account works across both apps.
+
+---
+
 ## Database Schema
 
 The app runs on a shared Supabase PostgreSQL database (the `users` table is shared with **Interview Handbook**). Row Level Security is enabled on every table.
