@@ -1,6 +1,7 @@
 -- ============================================================
 -- CODE BATTLE — Database schema (Supabase PostgreSQL)
 -- Custom username + password auth. No Supabase Auth, no email.
+-- Tables for the code battle app only.
 -- ============================================================
 
 -- ------------------------------------------------------------------
@@ -162,54 +163,6 @@ create table if not exists public.ratings (
 create index if not exists ratings_player_idx on public.ratings (player_id, created_at desc);
 
 -- ------------------------------------------------------------------
--- user_topic_progress — Interview Handbook topic completion tracking.
--- Composite PK: (user_id, section_slug, topic_slug).
--- ------------------------------------------------------------------
-create table if not exists public.user_topic_progress (
-  user_id        uuid not null references public.users (id) on delete cascade,
-  section_slug   text not null,
-  topic_slug     text not null,
-  topic_id       text not null,
-  completed      boolean not null default false,
-  completed_at   timestamptz,
-  last_opened_at timestamptz,
-  created_at     timestamptz not null default now(),
-  updated_at     timestamptz not null default now(),
-  primary key (user_id, section_slug, topic_slug)
-);
-
-create index if not exists user_topic_progress_user_idx
-  on public.user_topic_progress (user_id);
-
--- ------------------------------------------------------------------
--- user_preferences — theme, pinned topics, assistant state, etc.
--- ------------------------------------------------------------------
-create table if not exists public.user_preferences (
-  user_id             uuid primary key references public.users (id) on delete cascade,
-  app_theme           text not null default 'system'
-                        check (app_theme in ('light','dark','system')),
-  pinned_topic_hrefs  text[] not null default '{}',
-  recent_queries      text[] not null default '{}',
-  recent_topic_hrefs  text[] not null default '{}',
-  assistant_state     jsonb not null default '{}',
-  created_at          timestamptz not null default now(),
-  updated_at          timestamptz not null default now()
-);
-
--- ------------------------------------------------------------------
--- user_progress_dashboard — aggregated view for progress page.
--- ------------------------------------------------------------------
-create or replace view public.user_progress_dashboard as
-select
-  user_id,
-  count(*) filter (where completed) as completed_topics,
-  max(last_opened_at) as last_opened_at,
-  max(completed_at) as last_completed_at,
-  max(updated_at) as last_activity_at
-from public.user_topic_progress
-group by user_id;
-
--- ------------------------------------------------------------------
 -- updated_at trigger function (shared across tables).
 -- ------------------------------------------------------------------
 create or replace function public.set_updated_at()
@@ -228,95 +181,6 @@ before update on public.users
 for each row
 execute function public.set_updated_at();
 
-drop trigger if exists set_user_topic_progress_updated_at on public.user_topic_progress;
-create trigger set_user_topic_progress_updated_at
-before update on public.user_topic_progress
-for each row
-execute function public.set_updated_at();
-
-drop trigger if exists set_user_preferences_updated_at on public.user_preferences;
-create trigger set_user_preferences_updated_at
-before update on public.user_preferences
-for each row
-execute function public.set_updated_at();
-
--- ------------------------------------------------------------------
--- categories — Interview Handbook section metadata.
--- ------------------------------------------------------------------
-create table if not exists public.categories (
-  id          text primary key,
-  title       text not null,
-  icon        text not null,
-  description text not null,
-  color       text not null,
-  "group"     text not null,
-  available   boolean not null default true,
-  sort_order  int not null default 0
-);
-
--- ------------------------------------------------------------------
--- modules — learning path groupings within a category.
--- ------------------------------------------------------------------
-create table if not exists public.modules (
-  id          text primary key,
-  category_id text not null references public.categories(id) on delete cascade,
-  level       int not null,
-  title       text not null,
-  difficulty  text not null,
-  description text not null,
-  category    text,
-  sort_order  int not null default 0
-);
-
-create index if not exists modules_category_idx on public.modules (category_id);
-
--- ------------------------------------------------------------------
--- topics — main content (concept, code, metadata).
--- ------------------------------------------------------------------
-create table if not exists public.topics (
-  id            text primary key,
-  category_id   text not null references public.categories(id) on delete cascade,
-  module_id     text references public.modules(id) on delete set null,
-  title         text not null,
-  slug          text not null,
-  icon          text not null,
-  difficulty    text not null,
-  description   text not null,
-  leetcode_link text,
-
-  concept_explanation      text not null,
-  concept_analogy          text not null,
-  concept_key_points       text[] not null default '{}',
-  concept_time_complexity  text,
-  concept_space_complexity text,
-
-  code_default_code text not null,
-  code_language     text not null default 'javascript',
-  code_files        jsonb,
-
-  sort_order int not null default 0,
-  unique (category_id, slug)
-);
-
-create index if not exists topics_category_idx on public.topics (category_id);
-create index if not exists topics_module_idx on public.topics (module_id);
-create index if not exists topics_slug_idx on public.topics (slug);
-
--- ------------------------------------------------------------------
--- interview_questions
--- ------------------------------------------------------------------
-create table if not exists public.interview_questions (
-  id         uuid primary key default gen_random_uuid(),
-  topic_id   text not null references public.topics(id) on delete cascade,
-  question   text not null,
-  difficulty text not null,
-  hint       text not null,
-  sort_order int not null default 0
-);
-
-create index if not exists interview_questions_topic_idx
-  on public.interview_questions (topic_id);
-
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- NOTE: With custom auth, the client uses the anon key. RLS must
@@ -333,13 +197,7 @@ alter table public.matches           enable row level security;
 alter table public.match_problems    enable row level security;
 alter table public.match_players     enable row level security;
 alter table public.submissions       enable row level security;
-alter table public.ratings               enable row level security;
-alter table public.user_topic_progress    enable row level security;
-alter table public.user_preferences       enable row level security;
-alter table public.categories             enable row level security;
-alter table public.modules                enable row level security;
-alter table public.topics                 enable row level security;
-alter table public.interview_questions    enable row level security;
+alter table public.ratings           enable row level security;
 
 -- Problems / test cases: publicly readable.
 create policy "problems readable by all"
@@ -383,33 +241,6 @@ create policy "users can submit"
 -- ratings: readable by all.
 create policy "ratings readable by all"
   on public.ratings for select to anon using (true);
-
--- ------------------------------------------------------------------
--- user_topic_progress: readable by all; anyone may insert/upsert.
-create policy "user topic progress readable by all"
-  on public.user_topic_progress for select to anon using (true);
-create policy "users can upsert own progress"
-  on public.user_topic_progress for insert to anon with check (true);
-create policy "users can update own progress"
-  on public.user_topic_progress for update to anon using (true);
-
--- user_preferences: readable by all; anyone may insert/upsert.
-create policy "user preferences readable by all"
-  on public.user_preferences for select to anon using (true);
-create policy "users can upsert own preferences"
-  on public.user_preferences for insert to anon with check (true);
-create policy "users can update own preferences"
-  on public.user_preferences for update to anon using (true);
-
--- categories, modules, topics, interview_questions: publicly readable.
-create policy "categories readable by all"
-  on public.categories for select to anon using (true);
-create policy "modules readable by all"
-  on public.modules for select to anon using (true);
-create policy "topics readable by all"
-  on public.topics for select to anon using (true);
-create policy "interview questions readable by all"
-  on public.interview_questions for select to anon using (true);
 
 -- Protect the password hash: revoke select on the column from anon.
 -- ------------------------------------------------------------------

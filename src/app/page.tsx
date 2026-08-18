@@ -12,12 +12,8 @@ export default async function Home() {
       <div className="pointer-events-none absolute -bottom-40 left-1/3 h-[400px] w-[400px] rounded-full bg-emerald-400/5 blur-[120px]" />
 
       <div className="relative z-10 text-center max-w-3xl mx-auto">
-        {/* Logo mark */}
-        <div className="mx-auto mb-8">
+        <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl flex justify-center gap-5">
           <LogoMark size="md" />
-        </div>
-
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
           <span className="text-neutral-100">Code</span>{" "}
           <span className="text-emerald-400" style={{ textShadow: "0 0 30px rgba(34,197,94,0.4)" }}>
             Battle
