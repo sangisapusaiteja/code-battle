@@ -1,37 +1,15 @@
 import type { TestRunResult } from "@/types";
 import type { TestCase } from "@/lib/problems/client-data";
-import type { LanguageId } from "@/lib/code/languages";
 
 /**
- * Runs a user's solution against a set of test cases.
- *
- * - JavaScript / TypeScript: executed natively via `new Function` in an
- *   isolated scope (no DOM, no localStorage, no network).
- * - Python: executed in-browser via Pyodide (WebAssembly). Pyodide is loaded
- *   lazily on first use.
+ * Runs a user's JavaScript solution against a set of test cases.
+ * Executes via `new Function` in an isolated scope.
  */
 export async function runSolution(
   source: string,
   functionName: string,
   testCases: TestCase[],
-  language: LanguageId = "javascript",
   timeoutMs = 5000
-): Promise<TestRunResult> {
-  if (language === "python") {
-    return runPython(source, functionName, testCases, timeoutMs);
-  }
-  return runJs(source, functionName, testCases, timeoutMs);
-}
-
-/* ------------------------------------------------------------------ */
-/* JavaScript / TypeScript                                             */
-/* ------------------------------------------------------------------ */
-
-async function runJs(
-  source: string,
-  functionName: string,
-  testCases: TestCase[],
-  timeoutMs: number
 ): Promise<TestRunResult> {
   const results: TestRunResult["results"] = [];
 
@@ -66,7 +44,11 @@ async function runJs(
     let error: string | undefined;
     try {
       const args = buildArgs(arity, test.input);
+      const firstArg = args[0];
       actual = await executeWithTimeout(() => fn?.(...args), timeoutMs);
+      if (actual === undefined && Array.isArray(firstArg)) {
+        actual = firstArg;
+      }
     } catch (e) {
       error = (e as Error).message;
     }
@@ -98,123 +80,17 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Python (Pyodide)                                                    */
-/* ------------------------------------------------------------------ */
-
-let pyodidePromise: Promise<unknown> | null = null;
-
-async function getPyodide(): Promise<unknown> {
-  if (!pyodidePromise) {
-    pyodidePromise = (async () => {
-      const { loadPyodide } = await import("pyodide");
-      return loadPyodide();
-    })();
-  }
-  return pyodidePromise;
-}
-
-interface PyodideLike {
-  runPython(code: string): unknown;
-  toPy(value: unknown): unknown;
-  toJs(value: unknown): unknown;
-  globals: {
-    set(name: string, value: unknown): void;
-  };
-}
-
-async function runPython(
-  source: string,
-  functionName: string,
-  testCases: TestCase[],
-  timeoutMs: number
-): Promise<TestRunResult> {
-  const results: TestRunResult["results"] = [];
-
-  let py: PyodideLike;
-  try {
-    py = (await getPyodide()) as PyodideLike;
-  } catch (e) {
-    return {
-      testsPassed: 0,
-      testsTotal: testCases.length,
-      results: [],
-      error: `Failed to load Python runtime: ${(e as Error).message}`,
-    };
-  }
-
-  // Define the user's function in the Python global namespace.
-  try {
-    py.runPython(source);
-  } catch (e) {
-    return {
-      testsPassed: 0,
-      testsTotal: testCases.length,
-      results: [],
-      error: `Syntax error: ${(e as Error).message}`,
-    };
-  }
-
-  const hasFn = py.runPython(`callable(${functionName})`);
-  if (!hasFn) {
-    return {
-      testsPassed: 0,
-      testsTotal: testCases.length,
-      results: [],
-      error: `Function "${functionName}" was not found.`,
-    };
-  }
-
-  const arity = py.toJs(py.runPython(`${functionName}.__code__.co_argcount`)) as number;
-
-  for (const test of testCases) {
-    let actual: unknown;
-    let error: string | undefined;
-    try {
-      const args = buildArgs(arity, test.input);
-      // Set each argument as a global, then call the function.
-      args.forEach((v, i) => py.globals.set(`__arg${i}`, py.toPy(v)));
-      const result = await Promise.race([
-        Promise.resolve(
-          py.runPython(
-            `${functionName}(${args.map((_, i) => `__arg${i}`).join(", ")})`
-          )
-        ),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Timed out")), timeoutMs)
-        ),
-      ]);
-      actual = py.toJs(result);
-    } catch (e) {
-      error = (e as Error).message;
-    }
-    const pass = !error && deepEqual(actual, test.expected_output);
-    results.push({ input: test.input, expected: test.expected_output, actual, pass, error });
-  }
-
-  return { testsPassed: results.filter((r) => r.pass).length, testsTotal: results.length, results };
-}
-
 /**
- * Builds the argument list for a function call based on its arity.
+ * The DB stores the input as an array of arguments, e.g.:
+ * - ["Hello World"]          -> fn("Hello World")        (1 arg = string)
+ * - [[1,1,2]]                -> fn([1,1,2])              (1 arg = array)
+ * - [[2,7,11,15], 9]         -> fn([2,7,11,15], 9)       (2 args)
  *
- * Handles two data shapes:
- * - Nested: input = [[2,7,11,15], 9]  -> fn([2,7,11,15], 9)   (arity 2)
- * - Flat:   input = ["h","e","l","l","o"] -> fn(["h","e","l","l","o"]) (arity 1)
- *
- * When the function takes a single argument and the stored input is a flat
- * array of scalars (first element is not itself an array/object), we wrap it
- * so the whole array is passed as one argument.
+ * We pass the input array directly as the args (deep-cloned so the user's
+ * code cannot mutate the original test case data).
  */
-function buildArgs(arity: number, input: unknown[]): unknown[] {
-  if (arity === 1) {
-    const first = input[0];
-    const isNested = Array.isArray(first) || (first !== null && typeof first === "object");
-    if (!isNested) {
-      return [input];
-    }
-  }
-  return input;
+function buildArgs(_arity: number, input: unknown[]): unknown[] {
+  return JSON.parse(JSON.stringify(input));
 }
 
 /* ------------------------------------------------------------------ */

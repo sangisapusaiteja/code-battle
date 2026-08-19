@@ -21,6 +21,7 @@ create table if not exists public.users (
   losses            int  not null default 0,
   current_streak    int  not null default 0,
   best_streak       int  not null default 0,
+  last_solve_date   date,
   problems_solved   int  not null default 0,
   avg_solve_seconds int  not null default 0,
   best_category     text,
@@ -201,11 +202,17 @@ alter table public.match_players     enable row level security;
 alter table public.submissions       enable row level security;
 alter table public.ratings           enable row level security;
 
--- Problems / test cases: publicly readable.
+-- Problems / test cases: publicly readable. Inserts are allowed so the
+-- admin API (which runs with the anon key) can add content. The admin
+-- check happens in the server action (requireAdmin).
 create policy "problems readable by all"
   on public.problems for select to anon using (true);
+create policy "problems insertable by all"
+  on public.problems for insert to anon with check (true);
 create policy "test cases readable by all"
   on public.problem_test_cases for select to anon using (true);
+create policy "test cases insertable by all"
+  on public.problem_test_cases for insert to anon with check (true);
 
 -- users: readable by all (for leaderboard/opponent info), but password
 -- hash is protected by column-level privileges (see below).

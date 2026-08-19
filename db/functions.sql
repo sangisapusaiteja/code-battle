@@ -89,6 +89,7 @@ $$;
 -- ------------------------------------------------------------------
 -- Award XP to a user (solo practice). SECURITY DEFINER so the anon client
 -- cannot directly UPDATE users (which would let it forge xp/elo).
+-- Also maintains current_streak / best_streak based on last_solve_date.
 -- ------------------------------------------------------------------
 create or replace function public.award_solo_xp(
   p_user_id uuid,
@@ -100,10 +101,31 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  today date := current_date;
+  last_solve date;
+  new_streak int;
 begin
+  select last_solve_date into last_solve from public.users where id = p_user_id;
+
+  if last_solve is null or last_solve < today - 1 then
+    new_streak := 1;
+  elsif last_solve = today - 1 then
+    new_streak := coalesce(
+      (select current_streak from public.users where id = p_user_id), 0
+    ) + 1;
+  else -- last_solve = today
+    new_streak := coalesce(
+      (select current_streak from public.users where id = p_user_id), 0
+    );
+  end if;
+
   update public.users
      set xp = xp + p_xp,
          problems_solved = problems_solved + p_problems_solved,
+         current_streak = new_streak,
+         best_streak = greatest(best_streak, new_streak),
+         last_solve_date = today,
          updated_at = now()
    where id = p_user_id;
 end;
@@ -156,6 +178,9 @@ declare
   delta_l      int;
   xp_gain      int := 100;
   v_loser_id   uuid;
+  today        date := current_date;
+  last_solve   date;
+  new_streak   int;
 begin
   -- Guard: only finalize once.
   if exists (select 1 from public.matches where id = p_match_id and status = 'finished') then
@@ -204,11 +229,27 @@ begin
     (v_loser_id,  p_match_id, elo_loser,  elo_loser  + delta_l, delta_l);
 
   -- Update aggregate user columns.
+  select last_solve_date into last_solve from public.users where id = p_winner_id;
+  if last_solve is null or last_solve < today - 1 then
+    new_streak := 1;
+  elsif last_solve = today - 1 then
+    new_streak := coalesce(
+      (select current_streak from public.users where id = p_winner_id), 0
+    ) + 1;
+  else
+    new_streak := coalesce(
+      (select current_streak from public.users where id = p_winner_id), 0
+    );
+  end if;
+
   update public.users
      set elo = elo_winner + delta_w,
          xp = xp + xp_gain,
          wins = wins + 1,
          problems_solved = problems_solved + 1,
+         current_streak = new_streak,
+         best_streak = greatest(best_streak, new_streak),
+         last_solve_date = today,
          updated_at = now()
    where id = p_winner_id;
 

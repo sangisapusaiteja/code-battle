@@ -1,4 +1,4 @@
-export type LanguageId = "javascript" | "typescript" | "python";
+export type LanguageId = "javascript";
 
 export interface LanguageDef {
   id: LanguageId;
@@ -9,8 +9,6 @@ export interface LanguageDef {
 
 export const LANGUAGES: LanguageDef[] = [
   { id: "javascript", label: "JavaScript", monaco: "javascript", runnable: true },
-  { id: "typescript", label: "TypeScript", monaco: "typescript", runnable: true },
-  { id: "python", label: "Python", monaco: "python", runnable: true },
 ];
 
 export function getLanguage(id: string): LanguageDef {
@@ -18,34 +16,11 @@ export function getLanguage(id: string): LanguageDef {
 }
 
 /**
- * Per-language starter code for a problem. Falls back to the problem's
- * default (JS) starter code when a language has no specific template.
+ * Starter code for a problem.
  */
 export function starterFor(
-  language: LanguageId,
+  _language: LanguageId,
   problem: { starter_code: string; function_name: string }
 ): string {
-  const jsArgs = deriveArgs(problem.starter_code);
-
-  switch (language) {
-    case "javascript":
-      return problem.starter_code;
-    case "typescript":
-      return `function ${problem.function_name}(${jsArgs}): unknown {\n  // TODO: implement\n}\n`;
-    case "python":
-      return `def ${problem.function_name}(${jsArgs}):\n    # TODO: implement\n    pass\n`;
-    default:
-      return problem.starter_code;
-  }
-}
-
-/** Extract the parameter list from a JS function signature, e.g. "(nums, target)". */
-function deriveArgs(starterCode: string): string {
-  const m = /function\s+\w+\s*\(([^)]*)\)/.exec(starterCode);
-  if (!m) return "args";
-  return m[1]
-    .split(",")
-    .map((s) => s.trim().split("=")[0].trim())
-    .filter(Boolean)
-    .join(", ");
+  return problem.starter_code;
 }

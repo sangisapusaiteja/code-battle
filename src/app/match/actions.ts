@@ -24,14 +24,15 @@ export async function getCurrentUser(): Promise<{ id: string; username: string }
 
 /**
  * Solo practice submission. Creates a single-player match, records the
- * submission, and awards XP when the solution is correct.
+ * submission, and awards XP based on test cases passed and difficulty.
  */
 export async function submitSolo(
   problemId: string,
   source: string,
   testsPassed: number,
   testsTotal: number,
-  language: string = "javascript"
+  language: string = "javascript",
+  difficulty: string = "easy"
 ): Promise<{ error?: string; xpGained?: number }> {
   const user = await requireUser();
   const supabase = await createClient();
@@ -49,9 +50,9 @@ export async function submitSolo(
     .single();
   if (matchError || !match) return { error: matchError?.message ?? "Failed to record practice." };
 
-  // Award XP only for a correct solution.
-  const correct = testsPassed === testsTotal && testsTotal > 0;
-  const xpGained = correct ? 20 : 0;
+  // XP: base scaled by difficulty, multiplied by test case pass rate.
+  const baseXP = difficulty === "hard" ? 30 : difficulty === "medium" ? 20 : 10;
+  const xpGained = testsTotal > 0 ? Math.round(baseXP * (testsPassed / testsTotal)) : 0;
 
   const { error: playerError } = await supabase.from("match_players").insert({
     match_id: match.id,
@@ -74,11 +75,11 @@ export async function submitSolo(
   });
   if (subError) return { error: subError.message };
 
-  if (correct) {
+  if (xpGained > 0) {
     await supabase.rpc("award_solo_xp", {
       p_user_id: user.userId,
       p_xp: xpGained,
-      p_problems_solved: 1,
+      p_problems_solved: testsPassed === testsTotal ? 1 : 0,
     });
   }
 
@@ -89,20 +90,22 @@ export async function submitSolo(
 
 /**
  * Solo practice set. Records a submission for each problem in the set and
- * awards XP for each correct solution. Returns per-problem results.
+ * awards XP based on test cases passed and difficulty. Returns per-problem results.
  */
 export async function submitSoloSet(
   problemId: string,
   source: string,
   testsPassed: number,
   testsTotal: number,
-  language: string = "javascript"
+  language: string = "javascript",
+  difficulty: string = "easy"
 ): Promise<{ error?: string; xpGained?: number; correct?: boolean }> {
   const user = await requireUser();
   const supabase = await createClient();
 
   const correct = testsPassed === testsTotal && testsTotal > 0;
-  const xpGained = correct ? 20 : 0;
+  const baseXP = difficulty === "hard" ? 30 : difficulty === "medium" ? 20 : 10;
+  const xpGained = testsTotal > 0 ? Math.round(baseXP * (testsPassed / testsTotal)) : 0;
 
   // Create a single-player match for this problem.
   const { data: match, error: matchError } = await supabase
@@ -138,11 +141,11 @@ export async function submitSoloSet(
   });
   if (subError) return { error: subError.message };
 
-  if (correct) {
+  if (xpGained > 0) {
     await supabase.rpc("award_solo_xp", {
       p_user_id: user.userId,
       p_xp: xpGained,
-      p_problems_solved: 1,
+      p_problems_solved: correct ? 1 : 0,
     });
   }
 

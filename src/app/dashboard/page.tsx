@@ -4,6 +4,7 @@ import { logout } from "@/app/auth/actions";
 import { listProblems } from "@/lib/problems/data";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import ProblemsGrid from "@/components/ProblemsGrid";
 
 export const metadata = { title: "Dashboard — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -13,9 +14,11 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("users")
-    .select("id, username, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved")
+    .select("id, username, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved, role")
     .eq("id", user.userId)
     .single();
+
+  const isAdmin = profile?.role === "admin";
 
   const problems = await listProblems();
 
@@ -45,6 +48,7 @@ export default async function DashboardPage() {
           { href: "/leaderboard", label: "Leaderboard" },
           { href: "/profile", label: "Profile" },
           { href: "/history", label: "History" },
+          ...(isAdmin ? [{ href: "/admin/problems", label: "Admin" }] : []),
         ].map((link) => (
           <Link
             key={link.href}
@@ -102,24 +106,7 @@ export default async function DashboardPage() {
         </section>
 
         {/* Problems Grid */}
-        <section className="mt-10">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-neutral-500">Problems</h2>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {problems.map((p) => (
-              <Link
-                key={p.id}
-                href={`/problem/${p.slug}`}
-                className="group rounded-xl border border-neutral-800 bg-neutral-900/60 p-5 transition-all duration-300 hover:border-emerald-500/20 hover:bg-neutral-900"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-neutral-200 group-hover:text-emerald-400 transition-colors">{p.title}</span>
-                  <DifficultyBadge d={p.difficulty} />
-                </div>
-                <p className="mt-2 text-xs text-neutral-500">{p.category}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
+        <ProblemsGrid problems={problems} />
 
         {/* Recent Battles */}
         {matches.length > 0 && (
@@ -169,9 +156,4 @@ function Stat({ label, value, color }: { label: string; value: number | string; 
       <p className="mt-1.5 text-xs uppercase tracking-wide text-neutral-500 font-medium">{label}</p>
     </div>
   );
-}
-
-function DifficultyBadge({ d }: { d: string }) {
-  const cls = d === "easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : d === "medium" ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20";
-  return <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${cls}`}>{d}</span>;
 }
