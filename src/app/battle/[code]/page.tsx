@@ -682,12 +682,6 @@ function ResultPopup({ match, players, profiles, submissions, meId, onExit }: {
   const opp = players.find((p) => p.player_id !== meId);
   const oppProfile = opp ? profiles[opp.player_id] : undefined;
   const oppPlayer = opp;
-  const mySubs = submissions.filter((s) => s.player_id === meId);
-  const oppSubs = opp ? submissions.filter((s) => s.player_id === opp.player_id) : [];
-  const myPassed = mySubs.reduce((s, x) => s + (x.tests_passed ?? 0), 0);
-  const myTotal = mySubs.reduce((s, x) => s + (x.tests_total ?? 0), 0);
-  const oppPassed = oppSubs.reduce((s, x) => s + (x.tests_passed ?? 0), 0);
-  const oppTotal = oppSubs.reduce((s, x) => s + (x.tests_total ?? 0), 0);
   const myTime = myPlayer?.finished_at ? Math.max(0, (new Date(myPlayer.finished_at).getTime() - new Date(match.starts_at ?? myPlayer.finished_at).getTime()) / 1000) : null;
   const oppTime = oppPlayer?.finished_at ? Math.max(0, (new Date(oppPlayer.finished_at).getTime() - new Date(match.starts_at ?? oppPlayer.finished_at).getTime()) / 1000) : null;
 
@@ -699,8 +693,8 @@ function ResultPopup({ match, players, profiles, submissions, meId, onExit }: {
       </h1>
       <p className="mt-2 text-neutral-400">vs {oppProfile?.username ?? "Opponent"} · {oppProfile?.elo ?? "—"} ELO</p>
       <div className="mt-8 space-y-3">
-        <ResultRow label="YOU" username={me?.username ?? "You"} passed={myPassed} total={myTotal} time={myTime} xp={myPlayer?.xp_gained ?? null} highlight={iWon} />
-        <ResultRow label="OPPONENT" username={oppProfile?.username ?? "Opponent"} passed={oppPassed} total={oppTotal} time={oppTime} xp={oppPlayer?.xp_gained ?? null} highlight={!iWon && Boolean(match.winner_id)} />
+        <ResultRow label="YOU" username={me?.username ?? "You"} time={myTime} xp={myPlayer?.xp_gained ?? null} highlight={iWon} />
+        <ResultRow label="OPPONENT" username={oppProfile?.username ?? "Opponent"} time={oppTime} xp={oppPlayer?.xp_gained ?? null} highlight={!iWon && Boolean(match.winner_id)} />
       </div>
       <button onClick={onExit}
         className="mt-8 w-full py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
@@ -710,8 +704,8 @@ function ResultPopup({ match, players, profiles, submissions, meId, onExit }: {
   );
 }
 
-function ResultRow({ label, username, passed, total, time, xp, highlight }: {
-  label: string; username: string; passed: number; total: number; time: number | null; xp: number | null; highlight: boolean;
+function ResultRow({ label, username, time, xp, highlight }: {
+  label: string; username: string; time: number | null; xp: number | null; highlight: boolean;
 }) {
   return (
     <div className={`rounded-xl border p-5 text-left ${highlight ? "border-emerald-500/30 bg-emerald-500/5" : "border-neutral-800 bg-neutral-900/60"}`}>
@@ -722,11 +716,7 @@ function ResultRow({ label, username, passed, total, time, xp, highlight }: {
         </div>
         {highlight && <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 text-xs font-bold">WINNER</span>}
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div>
-          <p className="text-xl font-bold text-neutral-100">{passed}/{total}</p>
-          <p className="text-xs text-neutral-500 font-medium">Tests</p>
-        </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 text-center">
         <div>
           <p className="text-xl font-bold text-neutral-100">{time != null ? formatTime(time) : "—"}</p>
           <p className="text-xs text-neutral-500 font-medium">Time</p>

@@ -96,7 +96,7 @@ stateDiagram-v2
 5. When **both players finish**, the server computes the winner (correctness, then time) and calls `finalize_match` — a `SECURITY DEFINER` function that atomically updates **Elo, XP, and the immutable ratings ledger**.
 6. Both players see the **result screen**, and the leaderboard updates instantly.
 
-If a player concedes, the opponent is awarded the win. Solo practice creates a single-player match and awards **+20 XP** per correct solution.
+If a player concedes, the opponent is awarded the win. Solo practice creates a single-player match and awards XP scaled by difficulty and test-case pass rate (easy 10 / medium 20 / hard 30).
 
 ---
 
@@ -357,13 +357,37 @@ Example: a 1200 player beats another 1200 → each changes by about **±16**. A 
 
 | Action | XP |
 |--------|-----|
-| Correct solo solution | **+20** |
+| Solo solution (easy) | **10** × pass rate |
+| Solo solution (medium) | **20** × pass rate |
+| Solo solution (hard) | **30** × pass rate |
 | Battle winner | **+100** |
 | Battle loser | **+10** |
 
-- **Solo practice** awards **+20 XP** per correct solution (`award_solo_xp`). Incorrect or incomplete solutions earn **0**.
+- **Solo practice** awards XP scaled by difficulty and multiplied by the test-case pass rate: `baseXP × (tests_passed / tests_total)`, where baseXP is **10** (easy), **20** (medium), or **30** (hard). A fully correct solution earns the full baseXP; a partial one earns a proportional amount; a solution passing no tests earns **0**.
 - **Battles** award **+100 XP** to the winner and **+10 XP** to the loser (`finalize_match`). Unlike Elo, both players **gain** XP for participating.
 - XP **never decreases** — it is purely cumulative.
+
+**Solo XP examples** (solo matches only — `baseXP × tests_passed / tests_total`):
+
+| Difficulty | baseXP | Tests | Passed | XP earned |
+|------------|--------|-------|--------|-----------|
+| Easy | 10 | 3 | 3 | `10 × 3/3 = 10` |
+| Easy | 10 | 3 | 2 | `10 × 2/3 ≈ 7` |
+| Medium | 20 | 5 | 5 | `20 × 5/5 = 20` |
+| Medium | 20 | 5 | 3 | `20 × 3/5 = 12` |
+| Hard | 30 | 10 | 10 | `30 × 10/10 = 30` |
+| Hard | 30 | 10 | 7 | `30 × 7/10 = 21` |
+
+Battle XP is fixed: winner **+100**, loser **+10** (not scaled by tests). This keeps the focus on winning the head-to-head rather than farming test cases, and stays consistent with Elo (also fixed, K=32). Difficulty is already balanced by matching you against opponents near your rating, so scaling battle XP by difficulty adds nothing.
+
+**Battle XP example** (1v1):
+
+| Outcome | XP |
+|---------|-----|
+| Winner | **+100** |
+| Loser | **+10** |
+
+A 1v1 win always awards **+100** and a loss always **+10**, regardless of problem difficulty or how many tests you passed.
 
 ### Rating Ledger
 
