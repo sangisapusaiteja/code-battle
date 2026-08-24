@@ -144,9 +144,6 @@ export default function Play() {
             >
               Coming Soon
             </button>
-            <span className="absolute right-4 top-4 rounded-full border border-violet-500/20 bg-violet-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-300">
-              🔜 Soon
-            </span>
           </div>
 
           {/* JOIN */}

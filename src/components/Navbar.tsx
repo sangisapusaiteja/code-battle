@@ -2,6 +2,7 @@ import Link from "next/link";
 import LogoMark from "./LogoMark";
 import NavLinks from "./NavLinks";
 import ThemeToggle from "./ThemeToggle";
+import BugReport from "./BugReport";
 import { getSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
@@ -47,6 +48,7 @@ export default async function Navbar() {
         {session ? <NavLinks links={links} /> : <div className="hidden flex-1 lg:block" />}
 
         <div className="ml-auto flex items-center gap-2 pl-3">
+          <BugReport triggerClassName="inline-flex h-9 items-center gap-1.5 rounded-md border border-neutral-700 px-3 text-sm font-medium text-neutral-300 transition-colors duration-200 hover:border-emerald-500/40 hover:text-emerald-400" />
           <ThemeToggle />
           {session && (
             <form action={logout}>
