@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState<AuthResult, FormData>(login, undefined);
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 sm:px-6">
+    <main className="flex w-full min-h-screen items-center justify-center px-4 sm:px-6">
       <div className="pointer-events-none absolute -top-40 left-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-[120px]" />
       <div className="pointer-events-none absolute -bottom-40 right-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-[120px]" />
 

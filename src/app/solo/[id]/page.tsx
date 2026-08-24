@@ -12,9 +12,12 @@ import {
 } from "@/lib/problems/client-data";
 import { runSolution } from "@/lib/code/runner";
 import { submitSolo } from "@/app/match/actions";
-import LogoMark from "@/components/LogoMark";
 import TestResults from "@/components/TestResults";
 import SampleCases from "@/components/SampleCases";
+import LogoMark from "@/components/LogoMark";
+import FullscreenGate from "@/components/FullscreenGate";
+import QuitSession from "@/components/QuitSession";
+import RulesGate from "@/components/RulesGate";
 import type { TestRunResult } from "@/types";
 
 export default function SoloPage() {
@@ -48,13 +51,13 @@ export default function SoloPage() {
   }, [params.id]);
 
   if (error) return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="flex w-full min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
       <p className="text-neutral-400">{error}</p>
       <button onClick={() => router.push("/play")} className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Arena</button>
     </div>
   );
 
-  if (!problem) return <div className="flex min-h-screen items-center justify-center text-neutral-500">Loading…</div>;
+  if (!problem) return <div className="flex w-full min-h-screen items-center justify-center text-neutral-500">Loading…</div>;
 
   async function handleRun() {
     if (running) return;
@@ -76,17 +79,20 @@ export default function SoloPage() {
   }
 
   return (
-    <div className="flex h-dvh w-screen flex-col overflow-hidden bg-black">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-black">
+      <FullscreenGate />
+      <RulesGate />
       {/* Header */}
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-emerald-500/5 bg-black px-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push("/play")} className="text-sm text-neutral-400 hover:text-emerald-400 transition-colors duration-200">← Arena</button>
+          <LogoMark size="xs" />
           <div className="h-4 w-px bg-neutral-700" />
           <span className="text-sm font-semibold text-neutral-200">{problem.title}</span>
           <DifficultyBadge d={problem.difficulty} />
         </div>
         <div className="flex items-center gap-3">
           <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 text-xs font-bold">SOLO PRACTICE</span>
+          <QuitSession label="Quit" title="Quit Practice?" message="You'll leave this practice session and return to the arena." confirmLabel="Quit" />
           <LogoMark size="xs" />
         </div>
       </header>
@@ -149,7 +155,7 @@ export default function SoloPage() {
             <p className="mt-3 text-neutral-400">
               {xpGained && xpGained > 0 ? `You earned +${xpGained} XP` : "Try again to earn XP."}
             </p>
-            <button onClick={() => router.push("/dashboard")}
+            <button onClick={() => router.push("/")}
               className="mt-6 w-full py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
               Back to Dashboard
             </button>

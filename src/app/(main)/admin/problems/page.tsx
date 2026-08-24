@@ -200,11 +200,8 @@ export default function AdminProblemsPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14">
       <header className="flex items-center justify-between border-b border-emerald-500/10 bg-black/80 backdrop-blur-sm px-4 sm:px-6 py-3 sticky top-0 z-50">
-        <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-neutral-300 hover:text-emerald-400 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Dashboard
-        </Link>
         <span className="text-sm font-bold text-emerald-400">Admin · Add Problem</span>
         <button
           onClick={toggleMode}
@@ -216,7 +213,7 @@ export default function AdminProblemsPage() {
         </button>
       </header>
 
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8">
+      <div className="w-full px-6 sm:px-10 lg:px-14 py-8">
         <h1 className="text-2xl font-extrabold text-neutral-100">Add Problem</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Create a new coding problem and its test cases.

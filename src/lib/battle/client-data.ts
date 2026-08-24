@@ -57,6 +57,16 @@ export async function getMatchByCode(code: string): Promise<MatchRow | null> {
   return (data as MatchRow) ?? null;
 }
 
+export async function getMatchById(matchId: string): Promise<MatchRow | null> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("matches")
+    .select("*")
+    .eq("id", matchId)
+    .maybeSingle();
+  return (data as MatchRow) ?? null;
+}
+
 export async function getMatchPlayers(matchId: string): Promise<MatchPlayerRow[]> {
   const supabase = createClient();
   const { data } = await supabase
@@ -104,13 +114,22 @@ export function subscribeToMatch(
 ) {
   const supabase = createClient();
 
+  const refetchAll = () => {
+    getMatchById(matchId).then((m) => m && onMatch(m));
+    getMatchPlayers(matchId).then(onPlayers);
+    getSubmissions(matchId).then(onSubmissions);
+  };
+
   const matchChannel = supabase
     .channel(`match-${matchId}`)
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "matches", filter: `id=eq.${matchId}` },
       (payload) => {
-        if (payload.new) onMatch(payload.new as MatchRow);
+        if (payload.new) {
+          onMatch(payload.new as MatchRow);
+          refetchAll();
+        }
       }
     )
     .on(
@@ -129,7 +148,15 @@ export function subscribeToMatch(
     )
     .subscribe();
 
+  // Safety net: if Realtime is unavailable or misconfigured (e.g. the
+  // tables were not added to the supabase_realtime publication), a
+  // light poll keeps every client converging without manual refresh.
+  const poll = setInterval(() => {
+    refetchAll();
+  }, 4000);
+
   return () => {
+    clearInterval(poll);
     supabase.removeChannel(matchChannel);
   };
 }

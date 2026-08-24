@@ -1,6 +1,7 @@
 import { getProblemBySlug, getTestCases } from "@/lib/problems/data";
 import { requireUser } from "@/lib/auth/session";
 import Link from "next/link";
+import GameEntryButton from "@/components/GameEntryButton";
 
 export const metadata = { title: "Problem — CodeBattle" };
 
@@ -11,9 +12,9 @@ export default async function ProblemPage({ params }: { params: Promise<{ id: st
 
   if (!problem) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+      <div className="flex w-full min-h-screen px-6 sm:px-10 lg:px-14 flex-col items-center justify-center gap-4">
         <p className="text-neutral-400">Problem not found.</p>
-        <Link href="/dashboard" className="text-emerald-400 hover:underline">Back to Dashboard</Link>
+        <Link href="/" className="text-emerald-400 hover:underline">Back to Dashboard</Link>
       </div>
     );
   }
@@ -22,11 +23,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ id: st
   const samples = testCases.filter((t) => t.is_sample);
 
   return (
-    <div className="mx-auto min-h-screen max-w-3xl px-4 sm:px-6 py-8">
-      <Link href="/dashboard" className="px-5 py-2.5 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400">
-        ← Dashboard
-      </Link>
-
+    <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14 py-8">
       <div className="mt-8 flex items-center justify-between">
         <h1 className="text-3xl font-extrabold text-neutral-100">{problem.title}</h1>
         <DifficultyBadge d={problem.difficulty} />
@@ -65,10 +62,12 @@ export default async function ProblemPage({ params }: { params: Promise<{ id: st
       </pre>
 
       <div className="mt-8 flex flex-col sm:flex-row gap-4">
-        <Link href={`/solo/${problem.slug}`}
-          className="px-8 py-3.5 text-base font-semibold rounded-xl border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5 text-center">
+        <GameEntryButton
+          href={`/solo/${problem.slug}`}
+          className="px-8 py-3.5 text-base font-semibold rounded-xl border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5 text-center"
+        >
           Practice Solo
-        </Link>
+        </GameEntryButton>
         <Link href="/play"
           className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-[1.02] text-center">
           Battle This Problem

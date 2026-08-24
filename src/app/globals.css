@@ -41,3 +41,65 @@ body {
   background: rgba(34, 197, 94, 0.2);
   color: #fff;
 }
+
+/* ============================================================
+   THEMES — "dark" is the default look (no overrides needed).
+   ".light" and ".read" are set on <html> by next-themes and
+   remap the app's dark utility classes to light / sepia palettes.
+   ============================================================ */
+
+/* ---------- LIGHT — crisp white ---------- */
+.light body { background: #f8f8f7; color: #292524; }
+.light ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
+
+.light .bg-black { background-color: #fafaf9; }
+.light .bg-black\/80 { background-color: rgba(250, 250, 249, 0.88); }
+.light .bg-neutral-950 { background-color: #efedeb; }
+.light .bg-neutral-900 { background-color: #ffffff; }
+.light .bg-neutral-900\/40 { background-color: rgba(255, 255, 255, 0.55); }
+.light .bg-neutral-900\/60 { background-color: rgba(255, 255, 255, 0.78); }
+.light .bg-neutral-900\/80 { background-color: rgba(255, 255, 255, 0.92); }
+.light .bg-neutral-800 { background-color: #f0efed; }
+.light .bg-neutral-700 { background-color: #e4e2df; }
+
+.light .border-neutral-800 { border-color: #e2e0dd; }
+.light .border-neutral-700 { border-color: #d6d3d1; }
+.light .border-neutral-600 { border-color: #c7c3bf; }
+
+.light .text-neutral-50 { color: #171412; }
+.light .text-neutral-100 { color: #1c1917; }
+.light .text-neutral-200 { color: #292524; }
+.light .text-neutral-300 { color: #44403c; }
+.light .text-neutral-400 { color: #57534e; }
+.light .text-neutral-500 { color: #79716b; }
+.light .text-neutral-600 { color: #9c948d; }
+
+.light .placeholder\:text-neutral-600::placeholder { color: #a39a92; }
+
+/* ---------- READ — warm sepia paper ---------- */
+.read body { background: #f6efe0; color: #4d3f30; }
+.read ::-webkit-scrollbar-track { background: rgba(59, 47, 34, 0.08); }
+
+.read .bg-black { background-color: #f6efe0; }
+.read .bg-black\/80 { background-color: rgba(246, 239, 224, 0.9); }
+.read .bg-neutral-950 { background-color: #ede3cd; }
+.read .bg-neutral-900 { background-color: #fdf8ec; }
+.read .bg-neutral-900\/40 { background-color: rgba(253, 248, 236, 0.55); }
+.read .bg-neutral-900\/60 { background-color: rgba(253, 248, 236, 0.8); }
+.read .bg-neutral-900\/80 { background-color: rgba(253, 248, 236, 0.92); }
+.read .bg-neutral-800 { background-color: #f0e7d3; }
+.read .bg-neutral-700 { background-color: #e5dabd; }
+
+.read .border-neutral-800 { border-color: #e0d4b8; }
+.read .border-neutral-700 { border-color: #d3c6a6; }
+.read .border-neutral-600 { border-color: #c2b28d; }
+
+.read .text-neutral-50 { color: #33281c; }
+.read .text-neutral-100 { color: #3b2f22; }
+.read .text-neutral-200 { color: #453727; }
+.read .text-neutral-300 { color: #57452f; }
+.read .text-neutral-400 { color: #6d583e; }
+.read .text-neutral-500 { color: #86704f; }
+.read .text-neutral-600 { color: #a68c66; }
+
+.read .placeholder\:text-neutral-600::placeholder { color: #ab9070; }

@@ -1,10 +1,9 @@
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { logout } from "@/app/auth/actions";
 import { listProblems } from "@/lib/problems/data";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import ProblemsGrid from "@/components/ProblemsGrid";
+import LogoMark from "@/components/LogoMark";
 
 export const metadata = { title: "Dashboard — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -17,8 +16,6 @@ export default async function DashboardPage() {
     .select("id, username, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved, role")
     .eq("id", user.userId)
     .single();
-
-  const isAdmin = profile?.role === "admin";
 
   const problems = await listProblems();
 
@@ -45,68 +42,62 @@ export default async function DashboardPage() {
   }[];
 
   return (
-    <div className="min-h-screen">
-      <Navbar>
-        {[
-          { href: "/leaderboard", label: "Leaderboard" },
-          { href: "/profile", label: "Profile" },
-          { href: "/history", label: "History" },
-          ...(isAdmin ? [{ href: "/admin/problems", label: "Admin" }] : []),
-        ].map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="px-4 py-2 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5"
-          >
-            {link.label}
-          </Link>
-        ))}
-        <form action={logout}>
-          <button type="submit" className="px-4 py-2 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-[#ef4444]/30 hover:text-[#ef4444] hover:bg-[#ef4444]/5">
-            Logout
-          </button>
-        </form>
-      </Navbar>
+    <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14">
+      <div className="w-full px-6 sm:px-10 lg:px-14 py-8">
+        {/* Hero */}
+        <section
+          className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-neutral-900/60 p-8 sm:p-12 mb-8"
+          style={{ boxShadow: "0 0 40px rgba(34,197,94,0.08)" }}
+        >
+          <div className="pointer-events-none absolute -top-24 -right-16 h-80 w-80 rounded-full bg-emerald-500/10 blur-[110px]" />
+          <div className="pointer-events-none absolute -bottom-32 left-1/4 h-64 w-64 rounded-full bg-emerald-400/5 blur-[100px]" />
 
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8">
-        {/* User Info */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-emerald-500/20 bg-neutral-900 text-xl font-bold text-emerald-400" style={{ boxShadow: "0 0 20px rgba(34,197,94,0.1)" }}>
-            {(profile?.username ?? "?")[0]?.toUpperCase()}
+          <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <span className="text-xl font-extrabold tracking-tight">
+                <span className="text-neutral-100">Code</span>
+                <span className="text-emerald-400">Battle</span>
+              </span>
+              <h1 className="mt-4 text-4xl sm:text-5xl font-extrabold tracking-tight">
+                Welcome back,{" "}
+                <span className="text-emerald-400" style={{ textShadow: "0 0 30px rgba(34,197,94,0.35)" }}>
+                  {profile?.username ?? user.username}
+                </span>
+              </h1>
+              <p className="mt-4 max-w-xl text-neutral-400 leading-relaxed">
+                Level {profile?.level ?? 1} ·{" "}
+                <span className="text-emerald-400 font-semibold">{profile?.elo ?? 1200} ELO</span> · Challenge developers
+                to real-time coding duels — same problem, same clock, only the fastest mind wins.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row shrink-0 gap-3">
+              <Link
+                href="/play"
+                className="w-full sm:w-auto px-8 py-4 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 text-center whitespace-nowrap"
+                style={{ boxShadow: "0 0 30px rgba(34,197,94,0.2)" }}
+              >
+                ⚔️ Battle Now
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="w-full sm:w-auto px-8 py-4 text-base font-semibold rounded-xl border border-emerald-500/30 text-emerald-400 transition-all duration-300 hover:bg-emerald-500/10 hover:scale-105 text-center whitespace-nowrap"
+              >
+                🏆 Leaderboard
+              </Link>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-extrabold">{profile?.username ?? user.username}</h1>
-            <p className="text-sm text-neutral-500">
-              Level {profile?.level ?? 1} · <span className="text-emerald-400">{profile?.elo ?? 1200} ELO</span>
-            </p>
-          </div>
-        </div>
+        </section>
 
         {/* Stats Row */}
         {profile && (
-          <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
+          <section className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
             <Stat label="ELO" value={profile.elo} color="#22c55e" />
             <Stat label="Level" value={profile.level} color="#f59e0b" />
             <Stat label="XP" value={profile.xp} color="#22c55e" />
             <Stat label="Wins" value={profile.wins} color="#f59e0b" />
           </section>
         )}
-
-        {/* CTA Banner */}
-        <section className="mt-8 rounded-xl border border-emerald-500/10 bg-neutral-900/60 p-6 backdrop-blur-sm" style={{ boxShadow: "0 0 30px rgba(34,197,94,0.05)" }}>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-neutral-100">Ready to fight?</h2>
-              <p className="mt-1 text-sm text-neutral-400">Create a room, share the code, and your opponent joins.</p>
-            </div>
-            <Link
-              href="/play"
-              className="w-full sm:w-auto px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 text-center"
-            >
-              Enter Arena
-            </Link>
-          </div>
-        </section>
 
         {/* Problems Grid */}
         <ProblemsGrid problems={problems} />

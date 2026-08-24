@@ -254,3 +254,18 @@ create policy "ratings readable by all"
 -- Protect the password hash: revoke select on the column from anon.
 -- ------------------------------------------------------------------
 revoke select (password_hash) on public.users from anon;
+
+-- ============================================================
+-- REALTIME — broadcast battle changes to connected clients.
+-- Without this, postgres_changes subscriptions receive nothing
+-- and players must refresh manually to see each other's moves.
+-- ============================================================
+do $$
+begin
+  alter publication supabase_realtime add table public.matches;
+  alter publication supabase_realtime add table public.match_players;
+  alter publication supabase_realtime add table public.submissions;
+exception
+  when duplicate_object then null; -- already a member
+end
+$$;

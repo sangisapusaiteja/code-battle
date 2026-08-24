@@ -15,13 +15,24 @@ type GroupBy = "none" | "difficulty" | "category" | "alpha";
 
 export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
   const [groupBy, setGroupBy] = useState<GroupBy>("category");
+  const [search, setSearch] = useState("");
+
+  const q = search.trim().toLowerCase();
+  const visible = q
+    ? problems.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.difficulty.toLowerCase().includes(q)
+      )
+    : problems;
 
   const grouped = (() => {
     if (groupBy === "none") return null;
 
     const map = new Map<string, Problem[]>();
 
-    for (const p of problems) {
+    for (const p of visible) {
       let key: string;
       if (groupBy === "difficulty") key = p.difficulty;
       else if (groupBy === "category") key = p.category;
@@ -46,10 +57,31 @@ export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
 
   return (
     <section className="mt-10">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-neutral-500">Problems</h2>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-neutral-500">
+          Problems{" "}
+          {q && <span className="normal-case tracking-normal text-neutral-600">({visible.length} match{visible.length === 1 ? "" : "es"})</span>}
+        </h2>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-500">Group by</span>
+          <div className="relative">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search problems…"
+              className="w-44 sm:w-56 rounded-lg border border-neutral-700 bg-neutral-900/60 py-1.5 pl-8 pr-8 text-xs text-neutral-200 outline-none transition-all duration-200 focus:border-emerald-500/40 placeholder:text-neutral-600"
+            />
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-neutral-500">🔍</span>
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-500 transition-colors hover:text-neutral-200"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <span className="hidden sm:inline text-xs text-neutral-500">Group by</span>
           {(["none", "difficulty", "category", "alpha"] as GroupBy[]).map((g) => (
             <button
               key={g}
@@ -66,9 +98,19 @@ export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
         </div>
       </div>
 
-      {groupBy === "none" ? (
+      {visible.length === 0 ? (
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-8 text-center">
+          <p className="text-sm text-neutral-500">No problems match “{search}”.</p>
+          <button
+            onClick={() => setSearch("")}
+            className="mt-3 text-xs font-semibold text-emerald-400 hover:underline"
+          >
+            Clear search
+          </button>
+        </div>
+      ) : groupBy === "none" ? (
         <div className="grid gap-3 sm:grid-cols-3">
-          {problems.map((p) => (
+          {visible.map((p) => (
             <ProblemCard key={p.id} problem={p} />
           ))}
         </div>

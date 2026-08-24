@@ -1,7 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
 
 export const metadata = { title: "Profile — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -25,14 +23,8 @@ export default async function ProfilePage() {
   const winRate = profile && profile.wins + profile.losses > 0 ? Math.round((profile.wins / (profile.wins + profile.losses)) * 100) : 0;
 
   return (
-    <div className="min-h-screen">
-      <Navbar>
-        <Link href="/dashboard" className="px-4 py-2 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5">
-          Dashboard
-        </Link>
-      </Navbar>
-
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8">
+    <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14">
+      <div className="w-full px-6 sm:px-10 lg:px-14 py-8">
         {/* Player Card */}
         <div className="rounded-2xl border border-emerald-500/20 bg-neutral-900/80 p-8" style={{ boxShadow: "0 0 40px rgba(34,197,94,0.05)" }}>
           <div className="flex items-center gap-6">

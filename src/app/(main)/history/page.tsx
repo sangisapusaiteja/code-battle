@@ -1,7 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
 
 export const metadata = { title: "History — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -35,14 +33,8 @@ export default async function HistoryPage() {
   const isSolo = (m: (typeof rows)[number]) => m.room_code === null;
 
   return (
-    <div className="min-h-screen">
-      <Navbar>
-        <Link href="/dashboard" className="px-4 py-2 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 hover:bg-emerald-500/5">
-          Dashboard
-        </Link>
-      </Navbar>
-
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8">
+    <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14">
+      <div className="w-full px-6 sm:px-10 lg:px-14 py-8">
         <h1 className="text-3xl font-extrabold">
           <span className="text-emerald-400" style={{ textShadow: "0 0 20px rgba(34,197,94,0.3)" }}>Battle History</span>
         </h1>

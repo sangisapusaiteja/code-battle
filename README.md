@@ -366,6 +366,7 @@ Example: a 1200 player beats another 1200 → each changes by about **±16**. A 
 - **Solo practice** awards XP scaled by difficulty and multiplied by the test-case pass rate: `baseXP × (tests_passed / tests_total)`, where baseXP is **10** (easy), **20** (medium), or **30** (hard). A fully correct solution earns the full baseXP; a partial one earns a proportional amount; a solution passing no tests earns **0**.
 - **Battles** award difficulty-weighted XP for every problem you actually solve (each final submission), scaled by its test-case pass rate. The winner earns the full base per problem (**10/20/30** by difficulty); the loser earns half base (**5/10/15**) — so effort is rewarded even in a loss. Solving 3 easy + 3 medium + 4 hard with perfect pass rates earns the winner `10×3 + 20×3 + 30×4 = 180 XP`.
 - XP **never decreases** — it is purely cumulative.
+- **Levels** are derived server-side from XP: `level = ⌊xp / 500⌋ + 1` (500 XP → Lv 2, 1,000 → Lv 3, 1,500 → Lv 4). Written only by the SECURITY DEFINER functions.
 
 **Battle XP examples** (winner pays full base, loser half base):
 

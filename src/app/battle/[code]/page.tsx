@@ -31,9 +31,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import LogoMark from "@/components/LogoMark";
 import TestResults from "@/components/TestResults";
 import SampleCases from "@/components/SampleCases";
+import FullscreenGate from "@/components/FullscreenGate";
+import RulesGate from "@/components/RulesGate";
 import type { TestRunResult } from "@/types";
 
 export default function BattlePage() {
@@ -200,12 +201,22 @@ export default function BattlePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Shared countdown deadline: prefer the server-stamped starts_at
+  // (set when the match enters "countdown"), falling back to the
+  // local optimistic value until the authoritative row arrives.
+  const countdownDeadline =
+    match?.status === "countdown"
+      ? match.starts_at
+        ? new Date(match.starts_at).getTime()
+        : countdownEnd
+      : null;
+
   // Host auto-advances countdown -> active.
   useEffect(() => {
     if (!match || !meId || match.status !== "countdown") return;
     const host = players.find((p) => p.is_host);
     if (!host || host.player_id !== meId) return;
-    if (countdownEnd !== null && Date.now() >= countdownEnd && !startedRef.current) {
+    if (countdownDeadline !== null && Date.now() >= countdownDeadline && !startedRef.current) {
       startedRef.current = true;
       // Realtime does not echo the host's own change, so set the start time
       // locally for the host's timer.
@@ -217,7 +228,7 @@ export default function BattlePage() {
       );
       beginActive(match.id);
     }
-  }, [match, now, meId, players, countdownEnd]);
+  }, [match, now, meId, players, countdownDeadline]);
 
   // When both players have finished, finalize the match. This is a fallback
   // for the case where the realtime echo of the last player's finish doesn't
@@ -240,95 +251,104 @@ export default function BattlePage() {
     }
   }, [match, players, meId]);
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-        <h1 className="text-xl font-bold" style={{ textShadow: "0 0 15px rgba(34,197,94,0.3)" }}>Room {code}</h1>
-        <p className="text-neutral-400">{error}</p>
-        <button onClick={() => router.push("/play")}
-          className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Arena</button>
-      </div>
-    );
-  }
+  const screen = (() => {
+    if (error) {
+      return (
+        <div className="flex w-full min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+          <h1 className="text-xl font-bold" style={{ textShadow: "0 0 15px rgba(34,197,94,0.3)" }}>Room {code}</h1>
+          <p className="text-neutral-400">{error}</p>
+          <button onClick={() => router.push("/play")}
+            className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Arena</button>
+        </div>
+      );
+    }
 
-  if (!match || !problem) {
-    return <div className="flex min-h-screen items-center justify-center text-neutral-500">Loading battle…</div>;
-  }
+    if (!match || !problem) {
+      return <div className="flex w-full min-h-screen items-center justify-center text-neutral-500">Loading battle…</div>;
+    }
 
-  const host = players.find((p) => p.is_host);
-  const isHost = host?.player_id === meId;
-  const amIParticipant = players.some((p) => p.player_id === meId);
+    const host = players.find((p) => p.is_host);
+    const isHost = host?.player_id === meId;
+    const amIParticipant = players.some((p) => p.player_id === meId);
 
-  if (!amIParticipant) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-        <h1 className="text-xl font-bold">Room {match.room_code}</h1>
-        <p className="text-neutral-400">You are not a participant in this room.</p>
-        <button onClick={() => router.push("/dashboard")}
-          className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Dashboard</button>
-      </div>
-    );
-  }
+    if (!amIParticipant) {
+      return (
+        <div className="flex w-full min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+          <h1 className="text-xl font-bold">Room {match.room_code}</h1>
+          <p className="text-neutral-400">You are not a participant in this room.</p>
+          <button onClick={() => router.push("/")}
+            className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Dashboard</button>
+        </div>
+      );
+    }
 
-  const myPlayer = players.find((p) => p.player_id === meId);
-  const iFinished = Boolean(myPlayer?.finished_at);
-  const bothFinished = players.length >= 2 && players.every((p) => p.finished_at);
+    const myPlayer = players.find((p) => p.player_id === meId);
+    const iFinished = Boolean(myPlayer?.finished_at);
+    const bothFinished = players.length >= 2 && players.every((p) => p.finished_at);
 
-  // Show the result popup when the match is finished OR both players have
-  // finished (the latter is the reliable signal both clients poll for).
-  if (match.status === "finished" || bothFinished) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-6">
-        <ResultPopup
-          match={match}
+    // Show the result popup when the match is finished OR both players have
+    // finished (the latter is the reliable signal both clients poll for).
+    if (match.status === "finished" || bothFinished) {
+      return (
+        <div className="flex w-full min-h-screen flex-col items-center justify-center px-6">
+          <ResultPopup
+            match={match}
+            players={players}
+            profiles={profiles}
+            meId={meId!}
+            onExit={() => router.push("/")}
+          />
+        </div>
+      );
+    }
+
+    if (iFinished) {
+      return (
+        <WaitingScreen
           players={players}
           profiles={profiles}
-          submissions={submissions}
           meId={meId!}
-          onExit={() => router.push("/dashboard")}
+          onQuit={() => setShowQuitConfirm(true)}
         />
+      );
+    }
+
+    return (
+      <div className="flex h-screen w-full flex-col overflow-hidden bg-black">
+        <TopBar match={match} isHost={isHost} hasOpponent={players.length >= 2} now={now} countdownEnd={countdownDeadline}
+          problemIndex={problemIndex} problemCount={problemIds.length}
+          myFinishedAt={players.find((p) => p.player_id === meId)?.finished_at ?? null}
+          onStart={isHost ? handleStart : undefined} onQuit={handleQuit} />
+        <div className="flex min-h-0 flex-1">
+          <ProblemPanel problem={problem} testCases={testCases} />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex h-9 shrink-0 items-center gap-3 border-b border-emerald-500/5 bg-black px-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">Language</span>
+              <Select value={language} onValueChange={(v) => handleLanguageChange(v as LanguageId)}>
+                <SelectTrigger className="h-8 w-44 rounded-lg border-neutral-700 bg-black text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>{LANGUAGES.map((l) => (<SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>))}</SelectContent>
+              </Select>
+            </div>
+            <div className="min-h-0 flex-1">
+              <Editor height="100%" language={getLanguage(language).monaco} theme="vs-dark" value={code_} onChange={(v) => setCode_(v ?? "")}
+                options={{ minimap: { enabled: false }, fontSize: 14, scrollBeyondLastLine: false, automaticLayout: true }} />
+            </div>
+            <ConsolePanel runResult={runResult} running={running} submitting={submitting} submitted={submittedCurrent}
+              status={match.status} onRun={handleRun} onSubmit={handleSubmit} onNext={handleNext} hasNext={problemIndex + 1 < problemIds.length} />
+          </div>
+          <OpponentPanel players={players} profiles={profiles} submissions={submissions} meId={meId!} onAcceptDefeat={handleAcceptDefeat} />
+        </div>
+        {showQuitConfirm && <QuitConfirmModal quitting={quitting} onCancel={() => setShowQuitConfirm(false)} onConfirm={handleConfirmQuit} />}
       </div>
     );
-  }
-
-  if (iFinished) {
-    return (
-      <WaitingScreen
-        players={players}
-        profiles={profiles}
-        meId={meId!}
-        onQuit={() => setShowQuitConfirm(true)}
-      />
-    );
-  }
+  })();
 
   return (
-    <div className="flex h-dvh w-screen flex-col overflow-hidden bg-black">
-      <TopBar match={match} isHost={isHost} hasOpponent={players.length >= 2} now={now} countdownEnd={countdownEnd}
-        problemIndex={problemIndex} problemCount={problemIds.length}
-        myFinishedAt={players.find((p) => p.player_id === meId)?.finished_at ?? null}
-        onStart={isHost ? handleStart : undefined} onQuit={handleQuit} />
-      <div className="flex min-h-0 flex-1">
-        <ProblemPanel problem={problem} testCases={testCases} />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex h-9 shrink-0 items-center gap-3 border-b border-emerald-500/5 bg-black px-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">Language</span>
-            <Select value={language} onValueChange={(v) => handleLanguageChange(v as LanguageId)}>
-              <SelectTrigger className="h-8 w-44 rounded-lg border-neutral-700 bg-black text-sm"><SelectValue /></SelectTrigger>
-              <SelectContent>{LANGUAGES.map((l) => (<SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>))}</SelectContent>
-            </Select>
-          </div>
-          <div className="min-h-0 flex-1">
-            <Editor height="100%" language={getLanguage(language).monaco} theme="vs-dark" value={code_} onChange={(v) => setCode_(v ?? "")}
-              options={{ minimap: { enabled: false }, fontSize: 14, scrollBeyondLastLine: false, automaticLayout: true }} />
-          </div>
-          <ConsolePanel runResult={runResult} running={running} submitting={submitting} submitted={submittedCurrent}
-            status={match.status} onRun={handleRun} onSubmit={handleSubmit} onNext={handleNext} hasNext={problemIndex + 1 < problemIds.length} />
-        </div>
-        <OpponentPanel players={players} profiles={profiles} submissions={submissions} meId={meId!} onAcceptDefeat={handleAcceptDefeat} />
-      </div>
-      {showQuitConfirm && <QuitConfirmModal quitting={quitting} onCancel={() => setShowQuitConfirm(false)} onConfirm={handleConfirmQuit} />}
-    </div>
+    <>
+      <FullscreenGate context="battle" />
+      <RulesGate />
+      {screen}
+    </>
   );
 
   async function handleRun() {
@@ -439,7 +459,7 @@ export default function BattlePage() {
     if (opp) {
       await acceptDefeat(match.id);
     }
-    router.push("/dashboard");
+    router.push("/");
   }
 }
 
@@ -481,7 +501,6 @@ function TopBar({
   return (
     <header className="flex items-center justify-between border-b border-emerald-500/10 bg-black px-4 py-3">
       <div className="flex items-center gap-3">
-        <LogoMark size="xs" />
         <span className="text-xs font-mono text-neutral-500">ROOM</span>
         <span className="font-mono text-sm font-bold text-emerald-400" style={{ textShadow: "0 0 10px rgba(34,197,94,0.3)" }}>{match.room_code}</span>
         {problemCount > 1 && <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 text-xs font-bold">{problemIndex + 1}/{problemCount}</span>}
@@ -653,7 +672,7 @@ function WaitingScreen({ players, profiles, meId, onQuit }: {
   const oppFinished = Boolean(opp?.finished_at);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
+    <div className="flex w-full min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-emerald-500/20 bg-neutral-900" style={{ boxShadow: "0 0 30px rgba(34,197,94,0.1)", animation: "pulse 2s ease-in-out infinite" }}>
         <span className="text-4xl">🏁</span>
       </div>
@@ -673,8 +692,8 @@ function WaitingScreen({ players, profiles, meId, onQuit }: {
   );
 }
 
-function ResultPopup({ match, players, profiles, submissions, meId, onExit }: {
-  match: MatchRow; players: MatchPlayerRow[]; profiles: Record<string, ProfileRow>; submissions: SubmissionRow[]; meId: string; onExit: () => void;
+function ResultPopup({ match, players, profiles, meId, onExit }: {
+  match: MatchRow; players: MatchPlayerRow[]; profiles: Record<string, ProfileRow>; meId: string; onExit: () => void;
 }) {
   const iWon = match.winner_id === meId;
   const me = profiles[meId];

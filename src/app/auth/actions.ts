@@ -67,7 +67,7 @@ export async function signUp(
   }
 
   await setSessionCookie({ userId: user.id, username: user.username });
-  redirect("/dashboard");
+  redirect("/");
 }
 
 export async function login(
@@ -110,7 +110,7 @@ export async function login(
   }
 
   await setSessionCookie({ userId: user.id, username: user.username });
-  redirect("/dashboard");
+  redirect("/");
 }
 
 export async function logout() {

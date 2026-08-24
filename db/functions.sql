@@ -33,8 +33,12 @@ as $$
 begin
   update public.matches
      set status = p_to_status,
-         starts_at = case when p_to_status = 'active'
-                          then coalesce(starts_at, now()) end,
+         starts_at = case
+                       -- The moment the countdown finishes = active start.
+                       -- Shared so BOTH clients render the same countdown.
+                       when p_to_status = 'countdown' then now() + interval '5 seconds'
+                       when p_to_status = 'active' then coalesce(starts_at, now())
+                     end,
          finished_at = case when p_to_status in ('finished','cancelled')
                             then now() end
    where id = p_match_id
@@ -123,6 +127,7 @@ begin
   update public.users
      set xp = xp + p_xp,
          problems_solved = problems_solved + p_problems_solved,
+         level = ((xp + p_xp) / 500) + 1,
          current_streak = new_streak,
          best_streak = greatest(best_streak, new_streak),
          last_solve_date = today,
@@ -282,6 +287,7 @@ begin
   update public.users
      set elo = elo_winner + delta_w,
          xp = xp + v_winner_xp,
+         level = ((xp + v_winner_xp) / 500) + 1,
          wins = wins + 1,
          problems_solved = problems_solved + 1,
          current_streak = new_streak,
@@ -293,6 +299,7 @@ begin
   update public.users
      set elo = elo_loser + delta_l,
          xp = xp + v_loser_xp,
+         level = ((xp + v_loser_xp) / 500) + 1,
          losses = losses + 1,
          updated_at = now()
    where id = v_loser_id;

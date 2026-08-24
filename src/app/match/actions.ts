@@ -83,7 +83,7 @@ export async function submitSolo(
     });
   }
 
-  revalidatePath("/dashboard");
+  revalidatePath("/");
   revalidatePath("/profile");
   return { xpGained };
 }
@@ -149,7 +149,7 @@ export async function submitSoloSet(
     });
   }
 
-  revalidatePath("/dashboard");
+  revalidatePath("/");
   revalidatePath("/profile");
   return { xpGained, correct };
 }
@@ -394,7 +394,7 @@ export async function acceptDefeat(matchId: string): Promise<{ error?: string }>
     p_winner_id: winnerId,
   });
 
-  revalidatePath("/dashboard");
+  revalidatePath("/");
   revalidatePath("/profile");
   revalidatePath("/leaderboard");
   return {};
@@ -417,7 +417,7 @@ async function finalizeMatch(matchId: string) {
     const bTime = new Date(b.finished_at).getTime();
     const winnerId = aTime < bTime ? a.player_id : b.player_id;
     await supabase.rpc("finalize_match", { p_match_id: matchId, p_winner_id: winnerId });
-    revalidatePath("/dashboard");
+    revalidatePath("/");
     revalidatePath("/profile");
     revalidatePath("/leaderboard");
     return;
@@ -458,7 +458,7 @@ async function finalizeMatch(matchId: string) {
     await supabase.rpc("finish_match_draw", { p_match_id: matchId });
   }
 
-  revalidatePath("/dashboard");
+  revalidatePath("/");
   revalidatePath("/profile");
   revalidatePath("/leaderboard");
 }
