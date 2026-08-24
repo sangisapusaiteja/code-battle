@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { setSessionCookie } from "@/lib/auth/session";
@@ -88,15 +87,12 @@ export async function GET(request: Request) {
       profile.name ?? ""
     );
 
-    // Random unusable password — Google sign-in never checks it.
-    const randomPassword = crypto.randomUUID() + crypto.randomUUID();
-    const passwordHash = await bcrypt.hash(randomPassword, 10);
-
+    // Google accounts start with NO password — the player can create
+    // one from their profile page whenever they want.
     const { data: user, error } = await supabase
       .from("users")
       .insert({
         username,
-        password_hash: passwordHash,
         google_id: profile.sub,
         avatar_url: profile.picture ?? null,
         auth_provider: "google",

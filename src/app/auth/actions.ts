@@ -86,7 +86,7 @@ export async function login(
 
   const { data: user } = await supabase
     .from("users")
-    .select("id, username")
+    .select("id, username, google_id")
     .eq("username", username)
     .maybeSingle();
 
@@ -101,6 +101,12 @@ export async function login(
   const passwordHash = hashData as string | null;
 
   if (!passwordHash) {
+    if (user.google_id) {
+      return {
+        error:
+          "You signed up with Google. Continue with Google, or create a password from your profile.",
+      };
+    }
     return { error: "Invalid username or password." };
   }
 

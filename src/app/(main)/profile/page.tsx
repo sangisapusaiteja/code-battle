@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
+import ProfileAccountCard from "@/components/ProfileAccountCard";
 
 export const metadata = { title: "Profile — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -40,6 +41,8 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
+
+        <ProfileAccountCard />
 
         {/* Stats Grid */}
         {profile && (
