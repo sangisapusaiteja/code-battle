@@ -59,7 +59,7 @@ export default function SoloPage() {
   async function handleRun() {
     if (running) return;
     setRunning(true);
-    const result = await runSolution(code_, problem!.function_name, testCases);
+    const result = await runSolution(code_, problem!.function_name, testCases, 5000, problem!.slug);
     setRunResult(result);
     setRunning(false);
   }
@@ -67,7 +67,7 @@ export default function SoloPage() {
   async function handleSubmit() {
     if (submitting || submitted) return;
     setSubmitting(true);
-    const result = await runSolution(code_, problem!.function_name, testCases);
+    const result = await runSolution(code_, problem!.function_name, testCases, 5000, problem!.slug);
     setRunResult(result);
     const res = await submitSolo(problem!.id, code_, result.testsPassed, result.testsTotal, "javascript", problem!.difficulty);
     if (res.error) { setError(res.error); }

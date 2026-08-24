@@ -157,6 +157,11 @@ $$;
 -- Finalize a battle and compute ELO / XP atomically.
 -- Idempotent: safe to run exactly once. Winner is passed by the server
 -- (best correctness, then time). K=32 two-player Elo.
+--
+-- XP is difficulty-weighted per problem actually solved (a final
+-- submission), scaled by that submission's test-case pass rate:
+--   winner: easy 10 / medium 20 / hard 30  x pass rate
+--   loser:  easy 5  / medium 10 / hard 15  x pass rate
 -- ------------------------------------------------------------------
 create or replace function public.finalize_match(
   p_match_id uuid,
@@ -176,7 +181,8 @@ declare
   exp_l        numeric;
   delta_w      int;
   delta_l      int;
-  xp_gain      int := 100;
+  v_winner_xp  int;
+  v_loser_xp   int;
   v_loser_id   uuid;
   today        date := current_date;
   last_solve   date;
@@ -212,15 +218,46 @@ begin
   delta_w := round(32 * (1 - exp_w))::int;
   delta_l := round(32 * (0 - exp_l))::int;
 
+  -- XP: sum over each player's final submissions — difficulty base
+  -- scaled by test-case pass rate. Winner earns full base
+  -- (10/20/30), loser half base (5/10/15).
+  select coalesce(sum(round(
+           case p.difficulty
+             when 'hard'   then 30
+             when 'medium' then 20
+             else 10
+           end * s.tests_passed::numeric / greatest(s.tests_total, 1)
+         )), 0)::int
+    into v_winner_xp
+    from public.submissions s
+    join public.problems p on p.id = s.problem_id
+   where s.match_id = p_match_id
+     and s.player_id = p_winner_id
+     and s.is_final;
+
+  select coalesce(sum(round(
+           case p.difficulty
+             when 'hard'   then 15
+             when 'medium' then 10
+             else 5
+           end * s.tests_passed::numeric / greatest(s.tests_total, 1)
+         )), 0)::int
+    into v_loser_xp
+    from public.submissions s
+    join public.problems p on p.id = s.problem_id
+   where s.match_id = p_match_id
+     and s.player_id = v_loser_id
+     and s.is_final;
+
   -- Write ELO deltas + XP to match_players (server only).
   update public.match_players
      set elo_after = elo_winner + delta_w,
-         xp_gained = xp_gain
+         xp_gained = v_winner_xp
    where match_id = p_match_id and player_id = p_winner_id;
 
   update public.match_players
      set elo_after = elo_loser + delta_l,
-         xp_gained = 10
+         xp_gained = v_loser_xp
    where match_id = p_match_id and player_id = v_loser_id;
 
   -- Append to the immutable ratings ledger.
@@ -244,7 +281,7 @@ begin
 
   update public.users
      set elo = elo_winner + delta_w,
-         xp = xp + xp_gain,
+         xp = xp + v_winner_xp,
          wins = wins + 1,
          problems_solved = problems_solved + 1,
          current_streak = new_streak,
@@ -255,7 +292,7 @@ begin
 
   update public.users
      set elo = elo_loser + delta_l,
-         xp = xp + 10,
+         xp = xp + v_loser_xp,
          losses = losses + 1,
          updated_at = now()
    where id = v_loser_id;

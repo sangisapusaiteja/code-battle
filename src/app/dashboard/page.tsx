@@ -27,16 +27,19 @@ export default async function DashboardPage() {
     .select(
       "id, room_code, status, winner_id, created_at, problem_id, " +
         "problems(title), " +
+        "match_problems(sort_order, problems(title)), " +
         "match_players!inner(xp_gained, elo_after, player_id), " +
         "submissions(tests_passed, tests_total)"
     )
     .eq("match_players.player_id", user.userId)
+    .eq("submissions.player_id", user.userId)
     .order("created_at", { ascending: false })
     .limit(10);
 
   const matches = (recentMatches ?? []) as unknown as {
     id: string; room_code: string | null; status: string; winner_id: string | null;
     created_at: string; problem_id: string; problems: { title: string } | null;
+    match_problems: { sort_order: number | null; problems: { title: string } | null }[];
     match_players: { xp_gained: number | null; elo_after: number | null; player_id: string }[];
     submissions: { tests_passed: number | null; tests_total: number | null }[];
   }[];
@@ -116,7 +119,13 @@ export default async function DashboardPage() {
               {matches.map((m) => {
                 const mp = m.match_players?.[0];
                 const won = m.winner_id === user.userId;
-                const sub = m.submissions?.[0];
+                const passed = (m.submissions ?? []).reduce((a, s) => a + (s.tests_passed ?? 0), 0);
+                const totalTests = (m.submissions ?? []).reduce((a, s) => a + (s.tests_total ?? 0), 0);
+                const titles = (m.match_problems ?? [])
+                  .slice()
+                  .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                  .map((p) => p.problems?.title)
+                  .filter(Boolean) as string[];
                 const solo = m.room_code === null;
                 return (
                   <div key={m.id} className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 transition-all duration-200 hover:border-neutral-700">
@@ -125,12 +134,16 @@ export default async function DashboardPage() {
                         <span className={`rounded-md px-2.5 py-1 text-xs font-bold ${solo ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20"}`}>
                           {solo ? "SOLO" : "BATTLE"}
                         </span>
-                        <span className="truncate font-medium text-neutral-200">{m.problems?.title ?? "Unknown"}</span>
+                        <span className="truncate font-medium text-neutral-200" title={titles.length > 0 ? titles.join(" · ") : undefined}>
+                          {titles.length > 1
+                            ? `${titles[0]} +${titles.length - 1} more`
+                            : titles[0] ?? m.problems?.title ?? "Unknown"}
+                        </span>
                       </div>
                       <p className="mt-1.5 text-xs text-neutral-500">{new Date(m.created_at).toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      {sub && <span className="text-sm text-neutral-400">{sub.tests_passed ?? 0}/{sub.tests_total ?? 0}</span>}
+                      {totalTests > 0 && <span className="text-sm text-neutral-400">{passed}/{totalTests}</span>}
                       {mp?.xp_gained != null && <span className="text-sm font-bold text-emerald-400">+{mp.xp_gained} XP</span>}
                       {!solo && mp?.elo_after != null && (
                         <span className={`rounded-md px-2.5 py-1 text-xs font-bold ${won ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20"}`}>

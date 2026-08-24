@@ -61,7 +61,7 @@ function SoloSetInner() {
   async function handleRun() {
     if (running || !problem) return;
     setRunning(true);
-    const result = await runSolution(code_, problem.function_name, testCases);
+    const result = await runSolution(code_, problem.function_name, testCases, 5000, problem.slug);
     setRunResult(result);
     setRunning(false);
   }
@@ -69,7 +69,7 @@ function SoloSetInner() {
   async function handleSubmit() {
     if (submitting || submitted || !problem) return;
     setSubmitting(true);
-    const result = await runSolution(code_, problem.function_name, testCases);
+    const result = await runSolution(code_, problem.function_name, testCases, 5000, problem.slug);
     setRunResult(result);
     const res = await submitSoloSet(problem.id, code_, result.testsPassed, result.testsTotal, language, problem.difficulty);
     if (res.error) { setError(res.error); }

@@ -360,34 +360,23 @@ Example: a 1200 player beats another 1200 → each changes by about **±16**. A 
 | Solo solution (easy) | **10** × pass rate |
 | Solo solution (medium) | **20** × pass rate |
 | Solo solution (hard) | **30** × pass rate |
-| Battle winner | **+100** |
-| Battle loser | **+10** |
+| Battle winner, per problem solved | **10/20/30** (by difficulty) × pass rate |
+| Battle loser, per problem solved | **5/10/15** (half base) × pass rate |
 
 - **Solo practice** awards XP scaled by difficulty and multiplied by the test-case pass rate: `baseXP × (tests_passed / tests_total)`, where baseXP is **10** (easy), **20** (medium), or **30** (hard). A fully correct solution earns the full baseXP; a partial one earns a proportional amount; a solution passing no tests earns **0**.
-- **Battles** award **+100 XP** to the winner and **+10 XP** to the loser (`finalize_match`). Unlike Elo, both players **gain** XP for participating.
+- **Battles** award difficulty-weighted XP for every problem you actually solve (each final submission), scaled by its test-case pass rate. The winner earns the full base per problem (**10/20/30** by difficulty); the loser earns half base (**5/10/15**) — so effort is rewarded even in a loss. Solving 3 easy + 3 medium + 4 hard with perfect pass rates earns the winner `10×3 + 20×3 + 30×4 = 180 XP`.
 - XP **never decreases** — it is purely cumulative.
 
-**Solo XP examples** (solo matches only — `baseXP × tests_passed / tests_total`):
+**Battle XP examples** (winner pays full base, loser half base):
 
-| Difficulty | baseXP | Tests | Passed | XP earned |
-|------------|--------|-------|--------|-----------|
-| Easy | 10 | 3 | 3 | `10 × 3/3 = 10` |
-| Easy | 10 | 3 | 2 | `10 × 2/3 ≈ 7` |
-| Medium | 20 | 5 | 5 | `20 × 5/5 = 20` |
-| Medium | 20 | 5 | 3 | `20 × 3/5 = 12` |
-| Hard | 30 | 10 | 10 | `30 × 10/10 = 30` |
-| Hard | 30 | 10 | 7 | `30 × 7/10 = 21` |
+| Problems solved (perfect pass rates) | Winner XP | Loser XP |
+|--------------------------------------|-----------|----------|
+| 3 easy | `10×3 = 30` | `5×3 = 15` |
+| 3 easy + 3 medium | `10×3 + 20×3 = 90` | `5×3 + 10×3 = 45` |
+| 3 easy + 3 medium + 4 hard | `10×3 + 20×3 + 30×4 = 180` | `5×3 + 10×3 + 15×4 = 90` |
+| 1 hard, 6/10 tests passed (loser) | — | `round(15 × 6/10) = 9` |
 
-Battle XP is fixed: winner **+100**, loser **+10** (not scaled by tests). This keeps the focus on winning the head-to-head rather than farming test cases, and stays consistent with Elo (also fixed, K=32). Difficulty is already balanced by matching you against opponents near your rating, so scaling battle XP by difficulty adds nothing.
-
-**Battle XP example** (1v1):
-
-| Outcome | XP |
-|---------|-----|
-| Winner | **+100** |
-| Loser | **+10** |
-
-A 1v1 win always awards **+100** and a loss always **+10**, regardless of problem difficulty or how many tests you passed.
+Unlike Elo, both players can gain XP for solving problems — but winning always earns more per problem than losing.
 
 ### Rating Ledger
 

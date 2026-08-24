@@ -334,7 +334,7 @@ export default function BattlePage() {
   async function handleRun() {
     if (running) return;
     setRunning(true);
-    const result = await runSolution(code_, problem!.function_name, testCases);
+    const result = await runSolution(code_, problem!.function_name, testCases, 5000, problem!.slug);
     setRunResult(result);
     setRunning(false);
   }
@@ -352,7 +352,7 @@ export default function BattlePage() {
   async function handleSubmit() {
     if (submitting || !problem) return;
     setSubmitting(true);
-    const result = await runSolution(code_, problem.function_name, testCases);
+    const result = await runSolution(code_, problem.function_name, testCases, 5000, problem.slug);
     await submitSolution(
       match!.id,
       problem.id,
