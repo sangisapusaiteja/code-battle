@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { listProblems } from "@/lib/problems/data";
 import Link from "next/link";
 import ProblemsGrid from "@/components/ProblemsGrid";
-import LogoMark from "@/components/LogoMark";
+import Avatar from "@/components/Avatar";
 
 export const metadata = { title: "Dashboard — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("users")
-    .select("id, username, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved, role")
+    .select("id, username, avatar_url, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved, role")
     .eq("id", user.userId)
     .single();
 
@@ -58,10 +58,15 @@ export default async function DashboardPage() {
                 <span className="text-neutral-100">Code</span>
                 <span className="text-emerald-400">Battle</span>
               </span>
-              <h1 className="mt-4 text-4xl sm:text-5xl font-extrabold tracking-tight">
-                Welcome back,{" "}
-                <span className="text-emerald-400" style={{ textShadow: "0 0 30px rgba(34,197,94,0.35)" }}>
-                  {profile?.username ?? user.username}
+              <h1 className="mt-4 flex items-center flex-wrap gap-x-4 text-4xl sm:text-5xl font-extrabold tracking-tight">
+                <span className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center overflow-hidden rounded-2xl border border-emerald-500/30 bg-neutral-900" style={{ boxShadow: "0 0 25px rgba(34,197,94,0.15)" }}>
+                  <Avatar src={profile?.avatar_url} name={profile?.username ?? user.username} className="h-full w-full text-xl sm:text-2xl text-emerald-400" />
+                </span>
+                <span>
+                  Welcome back,{" "}
+                  <span className="text-emerald-400" style={{ textShadow: "0 0 30px rgba(34,197,94,0.35)" }}>
+                    {profile?.username ?? user.username}
+                  </span>
                 </span>
               </h1>
               <p className="mt-4 max-w-xl text-neutral-400 leading-relaxed">

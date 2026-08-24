@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import Avatar from "@/components/Avatar";
 
 export const metadata = { title: "Leaderboard — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export default async function LeaderboardPage() {
 
   const { data: players } = await supabase
     .from("users")
-    .select("id, username, elo, wins, losses, xp, level")
+    .select("id, username, avatar_url, elo, wins, losses, xp, level")
     .order("elo", { ascending: false })
     .limit(50);
 
@@ -34,10 +35,10 @@ export default async function LeaderboardPage() {
                   isMe ? "border border-emerald-500/30 bg-emerald-500/5" : "border border-neutral-800 bg-neutral-900/60 hover:border-neutral-700"
                 }`}>
                 <span className={`w-8 text-center font-black ${isTop3 ? "text-emerald-400 text-lg" : "text-neutral-600"}`}>#{i + 1}</span>
-                <div className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${
+                <div className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full text-sm font-bold ${
                   isTop3 ? "bg-emerald-500/20 text-emerald-400" : "bg-neutral-900 text-neutral-400"
                 }`} style={isTop3 ? { boxShadow: "0 0 15px rgba(34,197,94,0.15)" } : undefined}>
-                  {p.username[0]?.toUpperCase()}
+                  <Avatar src={p.avatar_url} name={p.username} className="h-full w-full" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-neutral-200">

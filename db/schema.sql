@@ -269,3 +269,23 @@ exception
   when duplicate_object then null; -- already a member
 end
 $$;
+
+
+-- ============================================================
+-- GOOGLE OAUTH — link Google identities to the shared users table.
+-- ============================================================
+alter table public.users add column if not exists google_id text unique;
+
+
+-- ============================================================
+-- AUTH PROVIDER — how the account signs in ('password' | 'google').
+-- ============================================================
+alter table public.users add column if not exists auth_provider text not null default 'password';
+update public.users set auth_provider = 'google' where google_id is not null and auth_provider = 'password';
+
+
+-- ============================================================
+-- GENERATED PASSWORD — plaintext kept only until the user sets
+-- their own password (Google-auth accounts).
+-- ============================================================
+alter table public.users add column if not exists generated_password text;

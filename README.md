@@ -30,7 +30,9 @@
 | **XP & Levels** | Earn XP for correct solo solutions and match wins |
 | **Leaderboard** | Global ranking by Elo across all players |
 | **Solo Practice** | Practice single problems or curated problem sets alone |
-| **Realtime Sync** | Live match state via Supabase Realtime |
+| **Realtime Sync** | Live match state via Supabase Realtime (with polling fallback) |
+| **Google Sign-In** | Continue with Google - one account works across all apps |
+| **Profile Avatars** | Google profile picture everywhere, with initial fallbacks |
 
 ---
 
@@ -39,7 +41,7 @@
 ```mermaid
 flowchart TD
     A[Visit site] --> B{Have an account?}
-    B -- No --> C[Sign up]
+    B -- No --> C[Sign up or Continue with Google]
     B -- Yes --> D[Sign in]
     C --> D
     D --> E[Dashboard]
@@ -202,6 +204,10 @@ erDiagram
         uuid id PK
         text username UK
         text password_hash
+        text google_id UK "Google sign-in link"
+        text auth_provider "password | google"
+        text generated_password "temp, until changed"
+        text avatar_url
         int elo
         int xp
         int level
@@ -293,7 +299,7 @@ erDiagram
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Shared identity table (username + bcrypt hash, Elo, XP, streaks, role). |
+| `users` | Shared identity table (username + bcrypt hash or Google link, Elo, XP, levels, streaks, role, avatar). |
 | `problems` | Coding problems with difficulty, category, constraints, starter code. |
 | `problem_test_cases` | Input/output test cases per problem. |
 | `matches` | Battle state machine (`waiting → matched → countdown → active → evaluating → finished`). |
@@ -324,6 +330,7 @@ erDiagram
 - **Sandboxed code execution.** User code runs in an isolated `new Function` scope (no DOM, no `localStorage`, no network) with a per-test timeout.
 - **httpOnly sessions.** Auth tokens live in `httpOnly` cookies via `@supabase/ssr` — no `localStorage`, no XSS token theft.
 - **Bcrypt password hashing.** Passwords are never stored or exposed in plain text.
+- **Google sign-in.** "Continue with Google" links a Google identity to the shared account (`google_id`) and issues the same session cookie; Google users get a system-generated password they can change from their profile.
 
 ---
 
@@ -426,6 +433,8 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key (safe to expose; protected by RLS) |
 | `SESSION_SECRET` | JWT signing secret (must match Interview Handbook) |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID (Continue with Google) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 | `GOOGLE_BUG_REPORT_SCRIPT_URL` | Google Apps Script web app URL that logs bug reports to a Google Sheet |
 
 ### Initialize Database

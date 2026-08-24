@@ -30,6 +30,7 @@ export interface MatchPlayerRow {
 export interface ProfileRow {
   id: string;
   username: string;
+  avatar_url: string | null;
   elo: number;
   xp: number;
   level: number;
@@ -81,7 +82,7 @@ export async function getProfiles(ids: string[]): Promise<ProfileRow[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("users")
-    .select("id, username, elo, xp, level, wins, losses")
+    .select("id, username, avatar_url, elo, xp, level, wins, losses")
     .in("id", ids);
   return (data ?? []) as ProfileRow[];
 }

@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import Avatar from "@/components/Avatar";
 
 export const metadata = { title: "Profile — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("users")
-    .select("id, username, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved")
+    .select("id, username, avatar_url, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved")
     .eq("id", user.userId)
     .single();
 
@@ -28,8 +29,8 @@ export default async function ProfilePage() {
         {/* Player Card */}
         <div className="rounded-2xl border border-emerald-500/20 bg-neutral-900/80 p-8" style={{ boxShadow: "0 0 40px rgba(34,197,94,0.05)" }}>
           <div className="flex items-center gap-6">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-3xl font-black text-emerald-400" style={{ textShadow: "0 0 15px rgba(34,197,94,0.4)" }}>
-              {(profile?.username ?? "?")[0]?.toUpperCase()}
+            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/10" style={{ boxShadow: "0 0 15px rgba(34,197,94,0.4)" }}>
+              <Avatar src={profile?.avatar_url} name={profile?.username ?? user.username} className="h-full w-full text-3xl text-emerald-400" />
             </div>
             <div>
               <h1 className="text-3xl font-extrabold text-neutral-100">{profile?.username ?? user.username}</h1>

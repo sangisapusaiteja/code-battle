@@ -35,6 +35,7 @@ import TestResults from "@/components/TestResults";
 import SampleCases from "@/components/SampleCases";
 import FullscreenGate from "@/components/FullscreenGate";
 import RulesGate from "@/components/RulesGate";
+import Avatar from "@/components/Avatar";
 import type { TestRunResult } from "@/types";
 
 export default function BattlePage() {
@@ -588,8 +589,8 @@ function PlayerCard({ label, profile, submission, finished, isMe }: {
     <div className={`mt-3 rounded-xl p-4 transition-all duration-200 ${isMe ? "border border-emerald-500/20 bg-emerald-500/5" : "border border-neutral-800 bg-neutral-900/60"}`}>
       <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</p>
       <div className="mt-2.5 flex items-center gap-3">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${isMe ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500/20 text-emerald-400"}`}>
-          {(profile?.username ?? "?")[0]?.toUpperCase()}
+        <div className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full text-sm font-bold ${isMe ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500/20 text-emerald-400"}`}>
+          <Avatar src={profile?.avatar_url} name={profile?.username} className="h-full w-full" />
         </div>
         <div className="min-w-0">
           <p className="truncate font-semibold text-neutral-200">{profile?.username ?? "—"}</p>
