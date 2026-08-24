@@ -54,7 +54,7 @@ export default async function DashboardPage() {
 
           <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              <span className="text-xl font-extrabold tracking-tight">
+              <span className="text-3xl font-extrabold tracking-tight">
                 <span className="text-neutral-100">Code</span>
                 <span className="text-emerald-400">Battle</span>
               </span>

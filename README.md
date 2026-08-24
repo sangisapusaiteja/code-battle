@@ -24,7 +24,7 @@
 | **Real-Time Battles** | Face a friend on the same problem set, under the same clock |
 | **Multi-Problem Sets** | Host picks one or more problems for a match |
 | **Monaco Editor** | Full-featured code editor with syntax highlighting |
-| **Multi-Language** | Write solutions in JavaScript, TypeScript, or Python |
+| **JavaScript Runner** | Sandboxed execution with per-test timeouts and instant sample-test feedback |
 | **Sandboxed Execution** | Run sample tests instantly in an isolated sandbox |
 | **ELO Rating System** | Server-authoritative Elo rating that updates after every match |
 | **XP & Levels** | Earn XP for correct solo solutions and match wins |
@@ -127,7 +127,7 @@ graph TB
     subgraph "External Services"
         Supabase[(Supabase)]
         Realtime[Supabase Realtime]
-        Pyodide[Pyodide]
+        BugSheet[Google Sheets Bug Reports]
     end
 
     UI --> Pages --> BattleUI
@@ -140,7 +140,6 @@ graph TB
     SoloActions --> Supabase
     ClientData --> Realtime
     Realtime --> Supabase
-    Runner --> Pyodide
     Runner --> Problems
 ```
 
@@ -187,7 +186,7 @@ sequenceDiagram
 
 - **Server-authoritative outcomes.** Match results, Elo, and XP are computed only by `SECURITY DEFINER` Postgres functions — the client can never forge a win or edit its rating.
 - **Realtime state machine.** The match lifecycle (`waiting → matched → countdown → active → finished`) is driven by Supabase Realtime subscriptions, so both players stay in sync without polling.
-- **Sandboxed execution.** User code runs in an isolated `new Function` scope (no DOM, no `localStorage`, no network) with a per-test timeout; Python runs in-browser via Pyodide.
+- **Sandboxed execution.** User code runs in an isolated `new Function` scope (no DOM, no `localStorage`, no network) with a per-test timeout.
 - **Race-safe submissions.** A unique partial index allows only one final submission per player per problem, so simultaneous submits can't double-score.
 - **Shared identity.** The `users` table is shared with **Interview Handbook**, so a single account works across both apps.
 
@@ -426,8 +425,8 @@ cp .env.example .env.local
 |----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key (safe to expose; protected by RLS) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server-side only) |
 | `SESSION_SECRET` | JWT signing secret (must match Interview Handbook) |
+| `GOOGLE_BUG_REPORT_SCRIPT_URL` | Google Apps Script web app URL that logs bug reports to a Google Sheet |
 
 ### Initialize Database
 
@@ -459,7 +458,7 @@ npm run dev
 | **Components** | [shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/) |
 | **Code Editor** | [Monaco Editor](https://microsoft.github.io/monaco-editor/) |
 | **Backend** | [Supabase](https://supabase.com/) (Auth + PostgreSQL + Realtime + RLS) |
-| **Python Execution** | [Pyodide](https://pyodide.org/) (in-browser Python) |
+| **Bug Reports** | Google Apps Script ? Google Sheet |
 | **Icons** | [Lucide](https://lucide.dev/) |
 
 ---
