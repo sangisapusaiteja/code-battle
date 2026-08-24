@@ -43,8 +43,8 @@ export default async function ProfilePage() {
         {/* Stats Grid */}
         {profile && (
           <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
-            <Stat label="ELO" value={profile.elo} color="#22c55e" />
-            <Stat label="XP" value={profile.xp} color="#f59e0b" />
+            <Stat label="ELO" value={profile.elo} color="#22c55e" sub="Elo Rating · skill level" />
+            <Stat label="XP" value={profile.xp} color="#f59e0b" sub="Experience Points" />
             <Stat label="Wins" value={profile.wins} color="#22c55e" />
             <Stat label="Losses" value={profile.losses} color="#ef4444" />
             <Stat label="Win Rate" value={`${winRate}%`} color="#22c55e" />
@@ -80,11 +80,12 @@ export default async function ProfilePage() {
   );
 }
 
-function Stat({ label, value, color }: { label: string; value: number | string; color: string }) {
+function Stat({ label, value, color, sub }: { label: string; value: number | string; color: string; sub?: string }) {
   return (
     <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-5 transition-all duration-200 hover:border-neutral-700">
       <p className="text-3xl font-extrabold" style={{ color, textShadow: `0 0 15px ${color}30` }}>{value}</p>
       <p className="mt-1.5 text-xs uppercase tracking-wide text-neutral-500 font-medium">{label}</p>
+      {sub && <p className="mt-0.5 text-[10px] normal-case tracking-normal text-neutral-600">{sub}</p>}
     </div>
   );
 }

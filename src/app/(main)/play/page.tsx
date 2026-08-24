@@ -105,7 +105,7 @@ export default function Play() {
         )}
 
         {/* Quick modes */}
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-3">
           {/* SOLO */}
           <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6">
             <div className="mb-4 flex items-center gap-2.5">
@@ -129,6 +129,24 @@ export default function Play() {
             >
               Start Solo
             </button>
+          </div>
+
+          {/* GROUP — coming soon */}
+          <div className="relative overflow-hidden rounded-xl border border-dashed border-neutral-800 bg-neutral-900/40 p-6 opacity-80">
+            <div className="mb-4 flex items-center gap-2.5">
+              <span className="rounded-md bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2.5 py-1 text-xs font-bold">GROUP</span>
+              <h2 className="text-base font-bold text-neutral-200">Group Battle</h2>
+            </div>
+            <p className="text-sm text-neutral-500">Team up and take on rival squads in multiplayer coding wars.</p>
+            <button
+              disabled
+              className="mt-4 w-full cursor-not-allowed py-3 text-sm font-bold rounded-xl border border-neutral-800 text-neutral-600"
+            >
+              Coming Soon
+            </button>
+            <span className="absolute right-4 top-4 rounded-full border border-violet-500/20 bg-violet-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-300">
+              🔜 Soon
+            </span>
           </div>
 
           {/* JOIN */}
