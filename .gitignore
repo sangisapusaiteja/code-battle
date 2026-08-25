@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# full problem catalog seed (generated from live DB - too large for git)
+db/seed.sql

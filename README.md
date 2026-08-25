@@ -443,7 +443,11 @@ Run the following in the Supabase SQL Editor, in order:
 
 1. `db/schema.sql` — tables + RLS
 2. `db/functions.sql` — SECURITY DEFINER functions
-3. `db/seed.sql` — problems + test cases
+3. `db/seed.sample.sql` — starter problem set (sample)
+
+> The **full catalog** (`db/seed.sql`, 125+ problems / 1000+ test cases) is
+> generated from the live database and git-ignored. Export it from Supabase
+> if you need an exact backup.
 
 ### Enable Auth
 
@@ -497,7 +501,8 @@ src/
 db/
 ├── schema.sql                  # Tables + RLS
 ├── functions.sql               # SECURITY DEFINER: transitions, Elo/XP finalize
-└── seed.sql                    # Problems + test cases
+└── seed.sample.sql             # Sample starter problems
+ (db/seed.sql is generated from the live DB and git-ignored)
 ```
 
 ---

@@ -1,5 +1,5 @@
--- ============================================================
--- CODE BATTLE — Seed problems + test cases
+﻿-- ============================================================
+-- CODE BATTLE ΓÇö Seed problems + test cases
 -- Run after schema.sql and functions.sql. Idempotent (safe to re-run).
 -- ============================================================
 
