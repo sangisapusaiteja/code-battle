@@ -156,11 +156,11 @@ sequenceDiagram
     participant RT as Supabase Realtime
 
     Host->>Next: createMatch(problemIds)
-    Next->>Supa: insert match + match_problems + match_players
+    Next->>Supa: insert cb_matches + cb_match_problems + cb_match_players
     Next-->>Host: room code
 
     Guest->>Next: joinMatch(code)
-    Next->>Supa: insert match_players, transition waiting→matched
+    Next->>Supa: insert cb_match_players, transition waiting→matched
     Next-->>Guest: joined
 
     Host->>Next: startMatch(matchId)
@@ -174,12 +174,12 @@ sequenceDiagram
     RT-->>Guest: active
 
     Host->>Next: submitSolution(...)
-    Next->>Supa: insert submission, advance_player
+    Next->>Supa: insert cb_submission, advance_player
     RT-->>Guest: host submitted
 
     Guest->>Next: submitSolution(...)
     Next->>Supa: both finished → finalize_match
-    Next->>Supa: compute Elo/XP, write ratings ledger
+    Next->>Supa: compute Elo/XP, write cb_ratings ledger
     RT-->>Host: finished + result
     RT-->>Guest: finished + result
 ```
@@ -196,7 +196,7 @@ sequenceDiagram
 
 ## Database Schema
 
-The app runs on a shared Supabase PostgreSQL database (the `users` table is shared with **Interview Handbook**). Row Level Security is enabled on every table.
+The app runs on a shared Supabase PostgreSQL database (the `users` table is shared with **Interview Handbook**). Row Level Security is enabled on every table. To avoid collisions in the shared DB, Code Battle prefixes its tables with `cb_` (CodeTrace uses `ct_`, Interview Handbook uses `ih_`).
 
 ```mermaid
 erDiagram
@@ -218,7 +218,7 @@ erDiagram
         timestamptz updated_at
     }
 
-    PROBLEMS {
+    CB_PROBLEMS {
         uuid id PK
         text slug UK
         text title
@@ -228,7 +228,7 @@ erDiagram
         text starter_code
     }
 
-    PROBLEM_TEST_CASES {
+    CB_PROBLEM_TEST_CASES {
         uuid id PK
         uuid problem_id FK
         jsonb input
@@ -236,7 +236,7 @@ erDiagram
         boolean is_sample
     }
 
-    MATCHES {
+    CB_MATCHES {
         uuid id PK
         uuid problem_id FK
         text status
@@ -246,14 +246,14 @@ erDiagram
         timestamptz finished_at
     }
 
-    MATCH_PROBLEMS {
+    CB_MATCH_PROBLEMS {
         uuid id PK
         uuid match_id FK
         uuid problem_id FK
         int sort_order
     }
 
-    MATCH_PLAYERS {
+    CB_MATCH_PLAYERS {
         uuid id PK
         uuid match_id FK
         uuid player_id FK
@@ -264,7 +264,7 @@ erDiagram
         int xp_gained
     }
 
-    SUBMISSIONS {
+    CB_SUBMISSIONS {
         uuid id PK
         uuid match_id FK
         uuid player_id FK
@@ -275,7 +275,7 @@ erDiagram
         boolean is_final
     }
 
-    RATINGS {
+    CB_RATINGS {
         uuid id PK
         uuid player_id FK
         uuid match_id FK
@@ -284,15 +284,15 @@ erDiagram
         int delta
     }
 
-    USERS ||--o{ MATCHES : "plays"
-    USERS ||--o{ MATCH_PLAYERS : "participates"
-    USERS ||--o{ SUBMISSIONS : "submits"
-    USERS ||--o{ RATINGS : "rated"
-    PROBLEMS ||--o{ PROBLEM_TEST_CASES : "tested by"
-    MATCHES ||--o{ MATCH_PROBLEMS : "contains"
-    MATCHES ||--o{ MATCH_PLAYERS : "has"
-    MATCHES ||--o{ SUBMISSIONS : "receives"
-    MATCHES ||--o{ RATINGS : "generates"
+    USERS ||--o{ CB_MATCHES : "plays"
+    USERS ||--o{ CB_MATCH_PLAYERS : "participates"
+    USERS ||--o{ CB_SUBMISSIONS : "submits"
+    USERS ||--o{ CB_RATINGS : "rated"
+    CB_PROBLEMS ||--o{ CB_PROBLEM_TEST_CASES : "tested by"
+    CB_MATCHES ||--o{ CB_MATCH_PROBLEMS : "contains"
+    CB_MATCHES ||--o{ CB_MATCH_PLAYERS : "has"
+    CB_MATCHES ||--o{ CB_SUBMISSIONS : "receives"
+    CB_MATCHES ||--o{ CB_RATINGS : "generates"
 ```
 
 ### Table Reference
@@ -300,13 +300,13 @@ erDiagram
 | Table | Purpose |
 |-------|---------|
 | `users` | Shared identity table (username + bcrypt hash or Google link, Elo, XP, levels, streaks, role, avatar). |
-| `problems` | Coding problems with difficulty, category, constraints, starter code. |
-| `problem_test_cases` | Input/output test cases per problem. |
-| `matches` | Battle state machine (`waiting → matched → countdown → active → evaluating → finished`). |
-| `match_problems` | Ordered list of problems in a match (multi-problem battles). |
-| `match_players` | Per-player match state — Elo before/after, XP gained. |
-| `submissions` | Code submissions with test results. A unique partial index allows only one final submission per player per problem. |
-| `ratings` | Immutable Elo ledger — insert-only, server-written. |
+| `cb_problems` | Coding problems with difficulty, category, constraints, starter code. |
+| `cb_problem_test_cases` | Input/output test cases per problem. |
+| `cb_matches` | Battle state machine (`waiting → matched → countdown → active → evaluating → finished`). |
+| `cb_match_problems` | Ordered list of problems in a match (multi-problem battles). |
+| `cb_match_players` | Per-player match state — Elo before/after, XP gained. |
+| `cb_submissions` | Code submissions with test results. A unique partial index allows only one final submission per player per problem. |
+| `cb_ratings` | Immutable Elo ledger — insert-only, server-written. |
 
 ### Postgres Functions
 
@@ -387,7 +387,7 @@ Unlike Elo, both players can gain XP for solving problems — but winning always
 
 ### Rating Ledger
 
-Every match appends two rows to the **`ratings` table** (an immutable, insert-only ledger):
+Every match appends two rows to the **`cb_ratings` table** (an immutable, insert-only ledger):
 
 ```
 player_id, match_id, elo_before, elo_after, delta
