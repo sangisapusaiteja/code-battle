@@ -12,7 +12,7 @@
 begin;
 
 -- ---------- Arrays ----------
-update public.problems set category = 'Arrays' where slug in (
+update public.cb_problems set category = 'Arrays' where slug in (
   'max-consecutive-ones',
   'third-maximum-number',
   'move-zeroes',
@@ -36,7 +36,7 @@ update public.problems set category = 'Arrays' where slug in (
 );
 
 -- ---------- Strings ----------
-update public.problems set category = 'Strings' where slug in (
+update public.cb_problems set category = 'Strings' where slug in (
   'reverse-string',
   'length-of-last-word',
   'is-subsequence',
@@ -64,7 +64,7 @@ update public.problems set category = 'Strings' where slug in (
 );
 
 -- ---------- Bit Manipulation ----------
-update public.problems set category = 'Bit Manipulation' where slug in (
+update public.cb_problems set category = 'Bit Manipulation' where slug in (
   'single-number',
   'missing-number',
   'set-mismatch',
@@ -80,7 +80,7 @@ update public.problems set category = 'Bit Manipulation' where slug in (
 );
 
 -- ---------- Hash Tables ----------
-update public.problems set category = 'Hash Tables' where slug in (
+update public.cb_problems set category = 'Hash Tables' where slug in (
   'contains-duplicate',
   'word-pattern',
   'first-unique-character-in-a-string',
@@ -103,7 +103,7 @@ update public.problems set category = 'Hash Tables' where slug in (
 );
 
 -- ---------- Two Pointers ----------
-update public.problems set category = 'Two Pointers' where slug in (
+update public.cb_problems set category = 'Two Pointers' where slug in (
   'merge-sorted-array',
   'merge-strings-alternately',
   'squares-of-a-sorted-array',
@@ -120,7 +120,7 @@ update public.problems set category = 'Two Pointers' where slug in (
 );
 
 -- ---------- Prefix Sum ----------
-update public.problems set category = 'Prefix Sum' where slug in (
+update public.cb_problems set category = 'Prefix Sum' where slug in (
   'subarray-sum-equals-k',
   'subarray-sums-divisible-by-k',
   'continuous-subarray-sum',
@@ -128,7 +128,7 @@ update public.problems set category = 'Prefix Sum' where slug in (
 );
 
 -- ---------- Sliding Window - Fixed Size ----------
-update public.problems set category = 'Sliding Window - Fixed Size' where slug in (
+update public.cb_problems set category = 'Sliding Window - Fixed Size' where slug in (
   'maximum-average-subarray-i',
   'find-all-anagrams-in-a-string',
   'permutation-in-string',
@@ -137,7 +137,7 @@ update public.problems set category = 'Sliding Window - Fixed Size' where slug i
 );
 
 -- ---------- Sliding Window - Dynamic Size ----------
-update public.problems set category = 'Sliding Window - Dynamic Size' where slug in (
+update public.cb_problems set category = 'Sliding Window - Dynamic Size' where slug in (
   'longest-substring-without-repeating-characters',
   'longest-repeating-character-replacement',
   'minimum-size-subarray-sum',
@@ -146,7 +146,7 @@ update public.problems set category = 'Sliding Window - Dynamic Size' where slug
 );
 
 -- ---------- Kadane's Algorithm ----------
-update public.problems set category = 'Kadane''s Algorithm' where slug in (
+update public.cb_problems set category = 'Kadane''s Algorithm' where slug in (
   'maximum-subarray',
   'maximum-sum-circular-subarray',
   'maximum-product-subarray',
@@ -154,7 +154,7 @@ update public.problems set category = 'Kadane''s Algorithm' where slug in (
 );
 
 -- ---------- Matrix (2D Array) ----------
-update public.problems set category = 'Matrix (2D Array)' where slug in (
+update public.cb_problems set category = 'Matrix (2D Array)' where slug in (
   'game-of-life',
   'rotate-image',
   'set-matrix-zeroes',
@@ -163,7 +163,7 @@ update public.problems set category = 'Matrix (2D Array)' where slug in (
 );
 
 -- ---------- Linked List ----------
-update public.problems set category = 'Linked List' where slug in (
+update public.cb_problems set category = 'Linked List' where slug in (
   'add-two-numbers',
   'copy-list-with-random-pointer',
   'intersection-of-two-linked-lists',
@@ -177,7 +177,7 @@ update public.problems set category = 'Linked List' where slug in (
 );
 
 -- ---------- LinkedList In-place Reversal ----------
-update public.problems set category = 'LinkedList In-place Reversal' where slug in (
+update public.cb_problems set category = 'LinkedList In-place Reversal' where slug in (
   'palindrome-linked-list',
   'reverse-linked-list',
   'reverse-linked-list-ii',

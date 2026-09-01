@@ -20,25 +20,25 @@ export default async function DashboardPage() {
   const problems = await listProblems();
 
   const { data: recentMatches } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .select(
       "id, room_code, status, winner_id, created_at, problem_id, " +
-        "problems(title), " +
-        "match_problems(sort_order, problems(title)), " +
-        "match_players!inner(xp_gained, elo_after, player_id), " +
-        "submissions(tests_passed, tests_total)"
+        "cb_problems(title), " +
+        "cb_match_problems(sort_order, cb_problems(title)), " +
+        "cb_match_players!inner(xp_gained, elo_after, player_id), " +
+        "cb_submissions(tests_passed, tests_total)"
     )
-    .eq("match_players.player_id", user.userId)
-    .eq("submissions.player_id", user.userId)
+    .eq("cb_match_players.player_id", user.userId)
+    .eq("cb_submissions.player_id", user.userId)
     .order("created_at", { ascending: false })
     .limit(10);
 
   const matches = (recentMatches ?? []) as unknown as {
     id: string; room_code: string | null; status: string; winner_id: string | null;
-    created_at: string; problem_id: string; problems: { title: string } | null;
-    match_problems: { sort_order: number | null; problems: { title: string } | null }[];
-    match_players: { xp_gained: number | null; elo_after: number | null; player_id: string }[];
-    submissions: { tests_passed: number | null; tests_total: number | null }[];
+    created_at: string; problem_id: string; cb_problems: { title: string } | null;
+    cb_match_problems: { sort_order: number | null; cb_problems: { title: string } | null }[];
+    cb_match_players: { xp_gained: number | null; elo_after: number | null; player_id: string }[];
+    cb_submissions: { tests_passed: number | null; tests_total: number | null }[];
   }[];
 
   return (
@@ -113,14 +113,14 @@ export default async function DashboardPage() {
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-neutral-500">Recent Battles</h2>
             <div className="space-y-2">
               {matches.map((m) => {
-                const mp = m.match_players?.[0];
+                const mp = m.cb_match_players?.[0];
                 const won = m.winner_id === user.userId;
-                const passed = (m.submissions ?? []).reduce((a, s) => a + (s.tests_passed ?? 0), 0);
-                const totalTests = (m.submissions ?? []).reduce((a, s) => a + (s.tests_total ?? 0), 0);
-                const titles = (m.match_problems ?? [])
+                const passed = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_passed ?? 0), 0);
+                const totalTests = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_total ?? 0), 0);
+                const titles = (m.cb_match_problems ?? [])
                   .slice()
                   .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                  .map((p) => p.problems?.title)
+                  .map((p) => p.cb_problems?.title)
                   .filter(Boolean) as string[];
                 const solo = m.room_code === null;
                 return (
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
                         <span className="truncate font-medium text-neutral-200" title={titles.length > 0 ? titles.join(" · ") : undefined}>
                           {titles.length > 1
                             ? `${titles[0]} +${titles.length - 1} more`
-                            : titles[0] ?? m.problems?.title ?? "Unknown"}
+                            : titles[0] ?? m.cb_problems?.title ?? "Unknown"}
                         </span>
                       </div>
                       <p className="mt-1.5 text-xs text-neutral-500">{new Date(m.created_at).toLocaleString()}</p>

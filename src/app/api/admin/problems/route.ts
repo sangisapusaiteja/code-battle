@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
   // Check slug uniqueness.
   const { data: existing } = await supabase
-    .from("problems")
+    .from("cb_problems")
     .select("id")
     .eq("slug", slug)
     .maybeSingle();
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   }
 
   const { data: problem, error: problemError } = await supabase
-    .from("problems")
+    .from("cb_problems")
     .insert({
       slug,
       title,
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       sort_order: tc.sort_order ?? i,
     }));
 
-    const { error: tcError } = await supabase.from("problem_test_cases").insert(rows);
+    const { error: tcError } = await supabase.from("cb_problem_test_cases").insert(rows);
     if (tcError) {
       return NextResponse.json(
         { error: tcError.message ?? "Problem created but test cases failed." },

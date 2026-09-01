@@ -39,7 +39,7 @@ export async function submitSolo(
 
   // Create a single-player match (no room code — it's solo practice).
   const { data: match, error: matchError } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .insert({
       problem_id: problemId,
       status: "finished",
@@ -54,7 +54,7 @@ export async function submitSolo(
   const baseXP = difficulty === "hard" ? 30 : difficulty === "medium" ? 20 : 10;
   const xpGained = testsTotal > 0 ? Math.round(baseXP * (testsPassed / testsTotal)) : 0;
 
-  const { error: playerError } = await supabase.from("match_players").insert({
+  const { error: playerError } = await supabase.from("cb_match_players").insert({
     match_id: match.id,
     player_id: user.userId,
     is_host: true,
@@ -63,7 +63,7 @@ export async function submitSolo(
   });
   if (playerError) return { error: playerError.message };
 
-  const { error: subError } = await supabase.from("submissions").insert({
+  const { error: subError } = await supabase.from("cb_submissions").insert({
     match_id: match.id,
     player_id: user.userId,
     problem_id: problemId,
@@ -109,7 +109,7 @@ export async function submitSoloSet(
 
   // Create a single-player match for this problem.
   const { data: match, error: matchError } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .insert({
       problem_id: problemId,
       status: "finished",
@@ -120,7 +120,7 @@ export async function submitSoloSet(
     .single();
   if (matchError || !match) return { error: matchError?.message ?? "Failed to record practice." };
 
-  const { error: playerError } = await supabase.from("match_players").insert({
+  const { error: playerError } = await supabase.from("cb_match_players").insert({
     match_id: match.id,
     player_id: user.userId,
     is_host: true,
@@ -129,7 +129,7 @@ export async function submitSoloSet(
   });
   if (playerError) return { error: playerError.message };
 
-  const { error: subError } = await supabase.from("submissions").insert({
+  const { error: subError } = await supabase.from("cb_submissions").insert({
     match_id: match.id,
     player_id: user.userId,
     problem_id: problemId,
@@ -174,7 +174,7 @@ export async function createMatch(problemIds: string[]): Promise<MatchActionResu
   // Ensure uniqueness.
   for (let i = 0; i < 5; i++) {
     const { data: existing } = await supabase
-      .from("matches")
+      .from("cb_matches")
       .select("id")
       .eq("room_code", code)
       .maybeSingle();
@@ -183,19 +183,19 @@ export async function createMatch(problemIds: string[]): Promise<MatchActionResu
   }
 
   const { data: match, error: matchError } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .insert({ problem_id: problemIds[0], room_code: code, status: "waiting" })
     .select("id")
     .single();
   if (matchError || !match) return { error: matchError?.message ?? "Failed to create room." };
 
   // Record all problems for this match.
-  const { error: mpError } = await supabase.from("match_problems").insert(
+  const { error: mpError } = await supabase.from("cb_match_problems").insert(
     problemIds.map((pid, i) => ({ match_id: match.id, problem_id: pid, sort_order: i }))
   );
   if (mpError) return { error: mpError.message };
 
-  const { error: playerError } = await supabase.from("match_players").insert({
+  const { error: playerError } = await supabase.from("cb_match_players").insert({
     match_id: match.id,
     player_id: user.userId,
     is_host: true,
@@ -212,7 +212,7 @@ export async function joinMatch(code: string): Promise<MatchActionResult> {
   const supabase = await createClient();
 
   const { data: match } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .select("id, status")
     .eq("room_code", code.toUpperCase())
     .maybeSingle();
@@ -220,14 +220,14 @@ export async function joinMatch(code: string): Promise<MatchActionResult> {
   if (match.status !== "waiting") return { error: "That room is already in progress." };
 
   const { data: existing } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("id")
     .eq("match_id", match.id)
     .eq("player_id", user.userId)
     .maybeSingle();
   if (existing) return { error: "You are already in this room." };
 
-  const { error: playerError } = await supabase.from("match_players").insert({
+  const { error: playerError } = await supabase.from("cb_match_players").insert({
     match_id: match.id,
     player_id: user.userId,
     is_host: false,
@@ -251,7 +251,7 @@ export async function startMatch(matchId: string): Promise<{ error?: string }> {
   const supabase = await createClient();
 
   const { data: mp } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("is_host")
     .eq("match_id", matchId)
     .eq("player_id", user.userId)
@@ -272,7 +272,7 @@ export async function beginActive(matchId: string): Promise<{ error?: string }> 
   const supabase = await createClient();
 
   const { data: mp } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("is_host")
     .eq("match_id", matchId)
     .eq("player_id", user.userId)
@@ -304,7 +304,7 @@ export async function submitSolution(
   const supabase = await createClient();
 
   const { data: match } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .select("id, status")
     .eq("id", matchId)
     .single();
@@ -313,7 +313,7 @@ export async function submitSolution(
     return { error: "This match is not accepting submissions." };
   }
 
-  const { error: subError } = await supabase.from("submissions").insert({
+  const { error: subError } = await supabase.from("cb_submissions").insert({
     match_id: matchId,
     player_id: user.userId,
     problem_id: problemId,
@@ -327,7 +327,7 @@ export async function submitSolution(
 
   // Get the ordered problem list.
   const { data: matchProblems } = await supabase
-    .from("match_problems")
+    .from("cb_match_problems")
     .select("problem_id")
     .eq("match_id", matchId)
     .order("sort_order", { ascending: true });
@@ -356,7 +356,7 @@ export async function submitSolution(
 
   // Check if the opponent has also finished.
   const { data: mpRows } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("player_id, finished_at")
     .eq("match_id", matchId);
 
@@ -374,7 +374,7 @@ export async function acceptDefeat(matchId: string): Promise<{ error?: string }>
   const supabase = await createClient();
 
   const { data: match } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .select("id, status")
     .eq("id", matchId)
     .single();
@@ -383,7 +383,7 @@ export async function acceptDefeat(matchId: string): Promise<{ error?: string }>
 
   // The opponent (the other player) is the winner.
   const { data: players } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("player_id")
     .eq("match_id", matchId);
   const winnerId = (players ?? []).find((p) => p.player_id !== user.userId)?.player_id;
@@ -406,7 +406,7 @@ async function finalizeMatch(matchId: string) {
 
   // If both players finished, the faster finisher wins.
   const { data: mpRows } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("player_id, finished_at")
     .eq("match_id", matchId);
 
@@ -425,7 +425,7 @@ async function finalizeMatch(matchId: string) {
 
   // Otherwise, fall back to combined score across all problems.
   const { data: subs } = await supabase
-    .from("submissions")
+    .from("cb_submissions")
     .select("player_id, tests_passed, created_at")
     .eq("match_id", matchId)
     .eq("is_final", true);
@@ -473,7 +473,7 @@ export async function finalizeMatchAction(matchId: string): Promise<{ error?: st
   const supabase = await createClient();
 
   const { data: match } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .select("id, status")
     .eq("id", matchId)
     .single();
@@ -482,7 +482,7 @@ export async function finalizeMatchAction(matchId: string): Promise<{ error?: st
 
   // Only participants may finalize.
   const { data: mp } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("player_id")
     .eq("match_id", matchId)
     .eq("player_id", user.userId)

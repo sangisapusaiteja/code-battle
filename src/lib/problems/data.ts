@@ -22,7 +22,7 @@ export interface TestCase {
 export async function listProblems(): Promise<Problem[]> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("problems")
+    .from("cb_problems")
     .select("*")
     .order("difficulty", { ascending: true });
   return (data ?? []) as Problem[];
@@ -31,7 +31,7 @@ export async function listProblems(): Promise<Problem[]> {
 export async function getProblem(id: string): Promise<Problem | null> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("problems")
+    .from("cb_problems")
     .select("*")
     .eq("id", id)
     .single();
@@ -41,7 +41,7 @@ export async function getProblem(id: string): Promise<Problem | null> {
 export async function getProblemBySlug(slug: string): Promise<Problem | null> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("problems")
+    .from("cb_problems")
     .select("*")
     .eq("slug", slug)
     .single();
@@ -51,7 +51,7 @@ export async function getProblemBySlug(slug: string): Promise<Problem | null> {
 export async function getTestCases(problemId: string): Promise<TestCase[]> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("problem_test_cases")
+    .from("cb_problem_test_cases")
     .select("*")
     .eq("problem_id", problemId)
     .order("sort_order", { ascending: true });

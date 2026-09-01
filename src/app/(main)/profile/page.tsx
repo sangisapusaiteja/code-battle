@@ -16,13 +16,44 @@ export default async function ProfilePage() {
     .single();
 
   const { data: ratings } = await supabase
-    .from("ratings")
-    .select("elo_before, elo_after, delta, created_at")
+    .from("cb_ratings")
+    .select(
+      "elo_before, elo_after, delta, created_at, match_id, " +
+        "cb_matches(room_code, problem_id, cb_problems(title), cb_match_problems(sort_order, cb_problems(title)), cb_match_players(player_id, users(username)))"
+    )
     .eq("player_id", user.userId)
     .order("created_at", { ascending: false })
     .limit(20);
 
   const winRate = profile && profile.wins + profile.losses > 0 ? Math.round((profile.wins / (profile.wins + profile.losses)) * 100) : 0;
+
+  const ratingRows = (ratings ?? []) as unknown as {
+    elo_before: number; elo_after: number; delta: number; created_at: string;
+    cb_matches: {
+      room_code: string | null;
+      problem_id: string | null;
+      cb_problems: { title: string } | null;
+      cb_match_problems: { sort_order: number | null; cb_problems: { title: string } | null }[];
+      cb_match_players: { player_id: string; users: { username: string } | null }[];
+    } | null;
+  }[];
+
+  const opponentOf = (r: (typeof ratingRows)[number]): string | null => {
+    const players = r.cb_matches?.cb_match_players ?? [];
+    const opp = players.find((p) => p.player_id !== user.userId);
+    return opp?.users?.username ?? null;
+  };
+
+  const problemsOf = (r: (typeof ratingRows)[number]): string[] => {
+    const list = (r.cb_matches?.cb_match_problems ?? [])
+      .slice()
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+      .map((p) => p.cb_problems?.title)
+      .filter(Boolean) as string[];
+    if (list.length > 0) return list;
+    const single = r.cb_matches?.cb_problems?.title;
+    return single ? [single] : [];
+  };
 
   return (
     <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14">
@@ -67,15 +98,36 @@ export default async function ProfilePage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {ratings.map((r, i) => (
-                <div key={i} className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 transition-all duration-200 hover:border-neutral-700">
-                  <span className="font-mono text-sm text-neutral-400">{r.elo_before} → {r.elo_after}</span>
-                  <span className={`text-base font-bold ${r.delta >= 0 ? "text-emerald-400" : "text-[#ef4444]"}`}>
-                    {r.delta >= 0 ? "+" : ""}{r.delta} ELO
-                  </span>
-                  <span className="text-xs text-neutral-600">{new Date(r.created_at).toLocaleString()}</span>
-                </div>
-              ))}
+              {ratingRows.map((r, i) => {
+                const opp = opponentOf(r);
+                const solo = r.cb_matches?.room_code === null;
+                const problems = problemsOf(r);
+                const problemLabel = problems.length > 1
+                  ? `${problems[0]} +${problems.length - 1} more`
+                  : problems[0] ?? "Unknown";
+                return (
+                  <div key={i} className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 transition-all duration-200 hover:border-neutral-700">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${solo ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20"}`}>
+                          {solo ? "SOLO" : "BATTLE"}
+                        </span>
+                        <span className="truncate font-medium text-neutral-200" title={problems.join(" · ")}>
+                          {solo ? "Solo" : opp ? `vs ${opp}` : "Battle"}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-neutral-500">{problemLabel}</p>
+                      <p className="mt-0.5 text-xs text-neutral-600">{new Date(r.created_at).toLocaleString()}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="font-mono text-sm text-neutral-400">{r.elo_before} → {r.elo_after}</span>
+                      <span className={`text-base font-bold ${r.delta >= 0 ? "text-emerald-400" : "text-[#ef4444]"}`}>
+                        {r.delta >= 0 ? "+" : ""}{r.delta} ELO
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>

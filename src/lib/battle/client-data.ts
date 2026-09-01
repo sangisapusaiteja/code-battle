@@ -51,7 +51,7 @@ export interface SubmissionRow {
 export async function getMatchByCode(code: string): Promise<MatchRow | null> {
   const supabase = createClient();
   const { data } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .select("*")
     .eq("room_code", code.toUpperCase())
     .maybeSingle();
@@ -61,7 +61,7 @@ export async function getMatchByCode(code: string): Promise<MatchRow | null> {
 export async function getMatchById(matchId: string): Promise<MatchRow | null> {
   const supabase = createClient();
   const { data } = await supabase
-    .from("matches")
+    .from("cb_matches")
     .select("*")
     .eq("id", matchId)
     .maybeSingle();
@@ -71,7 +71,7 @@ export async function getMatchById(matchId: string): Promise<MatchRow | null> {
 export async function getMatchPlayers(matchId: string): Promise<MatchPlayerRow[]> {
   const supabase = createClient();
   const { data } = await supabase
-    .from("match_players")
+    .from("cb_match_players")
     .select("*")
     .eq("match_id", matchId);
   return (data ?? []) as MatchPlayerRow[];
@@ -90,7 +90,7 @@ export async function getProfiles(ids: string[]): Promise<ProfileRow[]> {
 export async function getSubmissions(matchId: string): Promise<SubmissionRow[]> {
   const supabase = createClient();
   const { data } = await supabase
-    .from("submissions")
+    .from("cb_submissions")
     .select("*")
     .eq("match_id", matchId)
     .eq("is_final", true);
@@ -100,7 +100,7 @@ export async function getSubmissions(matchId: string): Promise<SubmissionRow[]> 
 export async function getMatchProblems(matchId: string): Promise<string[]> {
   const supabase = createClient();
   const { data } = await supabase
-    .from("match_problems")
+    .from("cb_match_problems")
     .select("problem_id")
     .eq("match_id", matchId)
     .order("sort_order", { ascending: true });
@@ -125,7 +125,7 @@ export function subscribeToMatch(
     .channel(`match-${matchId}`)
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "matches", filter: `id=eq.${matchId}` },
+      { event: "*", schema: "public", table: "cb_matches", filter: `id=eq.${matchId}` },
       (payload) => {
         if (payload.new) {
           onMatch(payload.new as MatchRow);
@@ -135,14 +135,14 @@ export function subscribeToMatch(
     )
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "match_players", filter: `match_id=eq.${matchId}` },
+      { event: "*", schema: "public", table: "cb_match_players", filter: `match_id=eq.${matchId}` },
       () => {
         getMatchPlayers(matchId).then(onPlayers);
       }
     )
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "submissions", filter: `match_id=eq.${matchId}` },
+      { event: "*", schema: "public", table: "cb_submissions", filter: `match_id=eq.${matchId}` },
       () => {
         getSubmissions(matchId).then(onSubmissions);
       }

@@ -31,7 +31,7 @@ security definer
 set search_path = public
 as $$
 begin
-  update public.matches
+  update public.cb_matches
      set status = p_to_status,
          starts_at = case
                        -- The moment the countdown finishes = active start.
@@ -57,7 +57,7 @@ security definer
 set search_path = public
 as $$
 begin
-  update public.match_players
+  update public.cb_match_players
      set problem_started_at = now()
    where match_id = p_match_id;
 end;
@@ -82,7 +82,7 @@ security definer
 set search_path = public
 as $$
 begin
-  update public.match_players
+  update public.cb_match_players
      set current_problem_index = coalesce(p_next_index, current_problem_index),
          finished_at = case when p_finished then now() else finished_at end
    where match_id = p_match_id
@@ -147,10 +147,10 @@ security definer
 set search_path = public
 as $$
 begin
-  if exists (select 1 from public.matches where id = p_match_id and status = 'finished') then
+  if exists (select 1 from public.cb_matches where id = p_match_id and status = 'finished') then
     return;
   end if;
-  update public.matches
+  update public.cb_matches
      set status = 'finished',
          winner_id = null,
          finished_at = now()
@@ -194,16 +194,16 @@ declare
   new_streak   int;
 begin
   -- Guard: only finalize once.
-  if exists (select 1 from public.matches where id = p_match_id and status = 'finished') then
+  if exists (select 1 from public.cb_matches where id = p_match_id and status = 'finished') then
     return;
   end if;
 
-  select * into r_match from public.matches where id = p_match_id for update;
+  select * into r_match from public.cb_matches where id = p_match_id for update;
 
   -- Determine loser: the other participant.
   for r_players in
     select player_id, elo_before
-      from public.match_players
+      from public.cb_match_players
      where match_id = p_match_id
   loop
     if r_players.player_id <> p_winner_id then
@@ -234,8 +234,8 @@ begin
            end * s.tests_passed::numeric / greatest(s.tests_total, 1)
          )), 0)::int
     into v_winner_xp
-    from public.submissions s
-    join public.problems p on p.id = s.problem_id
+    from public.cb_submissions s
+    join public.cb_problems p on p.id = s.problem_id
    where s.match_id = p_match_id
      and s.player_id = p_winner_id
      and s.is_final;
@@ -248,25 +248,25 @@ begin
            end * s.tests_passed::numeric / greatest(s.tests_total, 1)
          )), 0)::int
     into v_loser_xp
-    from public.submissions s
-    join public.problems p on p.id = s.problem_id
+    from public.cb_submissions s
+    join public.cb_problems p on p.id = s.problem_id
    where s.match_id = p_match_id
      and s.player_id = v_loser_id
      and s.is_final;
 
   -- Write ELO deltas + XP to match_players (server only).
-  update public.match_players
+  update public.cb_match_players
      set elo_after = elo_winner + delta_w,
          xp_gained = v_winner_xp
    where match_id = p_match_id and player_id = p_winner_id;
 
-  update public.match_players
+  update public.cb_match_players
      set elo_after = elo_loser + delta_l,
          xp_gained = v_loser_xp
    where match_id = p_match_id and player_id = v_loser_id;
 
   -- Append to the immutable ratings ledger.
-  insert into public.ratings (player_id, match_id, elo_before, elo_after, delta) values
+  insert into public.cb_ratings (player_id, match_id, elo_before, elo_after, delta) values
     (p_winner_id, p_match_id, elo_winner, elo_winner + delta_w, delta_w),
     (v_loser_id,  p_match_id, elo_loser,  elo_loser  + delta_l, delta_l);
 
@@ -304,7 +304,7 @@ begin
          updated_at = now()
    where id = v_loser_id;
 
-  update public.matches
+  update public.cb_matches
      set status = 'finished',
          winner_id = p_winner_id,
          finished_at = now()
