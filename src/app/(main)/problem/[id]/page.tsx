@@ -14,7 +14,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ id: st
     return (
       <div className="flex w-full min-h-screen px-6 sm:px-10 lg:px-14 flex-col items-center justify-center gap-4">
         <p className="text-neutral-400">Problem not found.</p>
-        <Link href="/" className="text-emerald-400 hover:underline">Back to Dashboard</Link>
+        <Link href="/dashboard" className="text-emerald-400 hover:underline">Back to Dashboard</Link>
       </div>
     );
   }

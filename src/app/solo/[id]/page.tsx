@@ -155,7 +155,7 @@ export default function SoloPage() {
             <p className="mt-3 text-neutral-400">
               {xpGained && xpGained > 0 ? `You earned +${xpGained} XP` : "Try again to earn XP."}
             </p>
-            <button onClick={() => router.push("/")}
+            <button onClick={() => router.push("/dashboard")}
               className="mt-6 w-full py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
               Back to Dashboard
             </button>

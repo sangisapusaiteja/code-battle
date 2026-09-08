@@ -80,7 +80,7 @@ export default function InstructionsPage() {
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 pb-8">
           <InstructionsCta />
           <Link
-            href="/"
+            href="/dashboard"
             className="px-8 py-3.5 text-base font-semibold rounded-xl border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400"
           >
             Back to Dashboard

@@ -1,168 +1,169 @@
-import { requireUser } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-import { listProblems } from "@/lib/problems/data";
 import Link from "next/link";
-import ProblemsGrid from "@/components/ProblemsGrid";
-import Avatar from "@/components/Avatar";
+import { getSession } from "@/lib/auth/session";
+import { createClient } from "@/lib/supabase/server";
+import {
+  Swords,
+  Trophy,
+  Timer,
+  Target,
+  Zap,
+  BookOpen,
+  Users,
+} from "lucide-react";
 
-export const metadata = { title: "Dashboard — CodeBattle" };
+export const metadata = { title: "Code Battle — Real-time Coding Battles" };
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
-  const user = await requireUser();
-  const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, username, avatar_url, elo, xp, level, wins, losses, current_streak, best_streak, problems_solved, role")
-    .eq("id", user.userId)
-    .single();
+const features = [
+  {
+    icon: Swords,
+    title: "Real-time 1v1 Duels",
+    desc: "Face a friend on the same problems, under the same clock. Fastest mind wins.",
+  },
+  {
+    icon: Timer,
+    title: "Same Problem, Same Timer",
+    desc: "Both players solve identical problem sets in sequence — no unfair advantages.",
+  },
+  {
+    icon: Trophy,
+    title: "ELO Rating System",
+    desc: "Every match updates a real Elo rating. Beat higher-rated players to climb fast.",
+  },
+  {
+    icon: Zap,
+    title: "XP & Levels",
+    desc: "Earn XP for correct solo solutions and match wins. Levels reflect your grind.",
+  },
+  {
+    icon: Target,
+    title: "Solo Practice",
+    desc: "Sharpen your skills alone on individual problems or curated problem sets.",
+  },
+  {
+    icon: Users,
+    title: "Global Leaderboard",
+    desc: "See exactly where you rank against every player on the platform.",
+  },
+];
 
-  const problems = await listProblems();
+export default async function LandingPage() {
+  const session = await getSession();
 
-  const { data: recentMatches } = await supabase
-    .from("cb_matches")
-    .select(
-      "id, room_code, status, winner_id, created_at, problem_id, " +
-        "cb_problems(title), " +
-        "cb_match_problems(sort_order, cb_problems(title)), " +
-        "cb_match_players!inner(xp_gained, elo_after, player_id), " +
-        "cb_submissions(tests_passed, tests_total)"
-    )
-    .eq("cb_match_players.player_id", user.userId)
-    .eq("cb_submissions.player_id", user.userId)
-    .order("created_at", { ascending: false })
-    .limit(10);
+  let username: string | null = null;
+  if (session) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("users")
+      .select("username")
+      .eq("id", session.userId)
+      .single();
+    username = data?.username ?? null;
+  }
 
-  const matches = (recentMatches ?? []) as unknown as {
-    id: string; room_code: string | null; status: string; winner_id: string | null;
-    created_at: string; problem_id: string; cb_problems: { title: string } | null;
-    cb_match_problems: { sort_order: number | null; cb_problems: { title: string } | null }[];
-    cb_match_players: { xp_gained: number | null; elo_after: number | null; player_id: string }[];
-    cb_submissions: { tests_passed: number | null; tests_total: number | null }[];
-  }[];
+  const ctaHref = session ? "/play" : "/signup";
 
   return (
-    <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14">
-      <div className="w-full px-6 sm:px-10 lg:px-14 py-8">
-        {/* Hero */}
-        <section
-          className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-neutral-900/60 p-8 sm:p-12 mb-8"
-          style={{ boxShadow: "0 0 40px rgba(34,197,94,0.08)" }}
-        >
-          <div className="pointer-events-none absolute -top-24 -right-16 h-80 w-80 rounded-full bg-emerald-500/10 blur-[110px]" />
-          <div className="pointer-events-none absolute -bottom-32 left-1/4 h-64 w-64 rounded-full bg-emerald-400/5 blur-[100px]" />
+    <div className="w-full">
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="pointer-events-none absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-emerald-500/10 blur-[130px]" />
+        <div className="pointer-events-none absolute -bottom-40 right-1/4 h-[380px] w-[380px] rounded-full bg-emerald-400/5 blur-[120px]" />
 
-          <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div className="min-w-0">
-              <span className="text-3xl font-extrabold tracking-tight">
-                <span className="text-neutral-100">Code</span>
-                <span className="text-emerald-400">Battle</span>
-              </span>
-              <h1 className="mt-4 flex items-center flex-wrap gap-x-4 text-4xl sm:text-5xl font-extrabold tracking-tight">
-                <span className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center overflow-hidden rounded-2xl border border-emerald-500/30 bg-neutral-900" style={{ boxShadow: "0 0 25px rgba(34,197,94,0.15)" }}>
-                  <Avatar src={profile?.avatar_url} name={profile?.username ?? user.username} className="h-full w-full text-xl sm:text-2xl text-emerald-400" />
-                </span>
-                <span>
-                  Welcome back,{" "}
-                  <span className="text-emerald-400" style={{ textShadow: "0 0 30px rgba(34,197,94,0.35)" }}>
-                    {profile?.username ?? user.username}
-                  </span>
-                </span>
-              </h1>
-              <p className="mt-4 max-w-xl text-neutral-400 leading-relaxed">
-                Level {profile?.level ?? 1} ·{" "}
-                <span className="text-emerald-400 font-semibold">{profile?.elo ?? 1200} ELO</span> · Challenge developers
-                to real-time coding duels — same problem, same clock, only the fastest mind wins.
-              </p>
-            </div>
+        <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 sm:py-28 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Now live · Compete in real time
+          </span>
 
-            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row shrink-0 gap-3">
+          <h1 className="mt-6 text-4xl sm:text-6xl font-extrabold tracking-tight">
+            <span className="text-neutral-100">Code</span>
+            <span className="text-emerald-400" style={{ textShadow: "0 0 40px rgba(34,197,94,0.4)" }}>
+              Battle
+            </span>
+            <br />
+            <span className="text-neutral-300">your way to the top</span>
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-400 leading-relaxed">
+            Practice coding interviews by competing against real developers. Face off on the
+            same problems, under the same clock, in real time across devices.
+          </p>
+
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href={ctaHref}
+              className="w-full sm:w-auto px-8 py-4 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 text-center whitespace-nowrap"
+              style={{ boxShadow: "0 0 40px rgba(34,197,94,0.3)" }}
+            >
+              {session ? (username ? `Continue as ${username} ⚔️` : "Battle Now ⚔️") : "Get Started — It's Free"}
+            </Link>
+            {!session && (
               <Link
-                href="/play"
-                className="w-full sm:w-auto px-8 py-4 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 text-center whitespace-nowrap"
-                style={{ boxShadow: "0 0 30px rgba(34,197,94,0.2)" }}
-              >
-                ⚔️ Battle Now
-              </Link>
-              <Link
-                href="/leaderboard"
+                href="/login"
                 className="w-full sm:w-auto px-8 py-4 text-base font-semibold rounded-xl border border-emerald-500/30 text-emerald-400 transition-all duration-300 hover:bg-emerald-500/10 hover:scale-105 text-center whitespace-nowrap"
               >
-                🏆 Leaderboard
+                I have an account
               </Link>
-            </div>
+            )}
           </div>
-        </section>
 
-        {/* Stats Row */}
-        {profile && (
-          <section className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
-            <Stat label="ELO" value={profile.elo} color="#22c55e" />
-            <Stat label="Level" value={profile.level} color="#f59e0b" />
-            <Stat label="XP" value={profile.xp} color="#22c55e" />
-            <Stat label="Wins" value={profile.wins} color="#f59e0b" />
-          </section>
-        )}
+          <div className="mt-10 flex items-center justify-center gap-2 text-xs text-neutral-500">
+            <BookOpen className="h-3.5 w-3.5" />
+            <span>One account works across Code Battle and Interview Handbook</span>
+          </div>
+        </div>
+      </section>
 
-        {/* Problems Grid */}
-        <ProblemsGrid problems={problems} />
+      {/* Features */}
+      <section className="mx-auto max-w-6xl px-6 pb-20">
+        <h2 className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-100">
+          Built for the rush of competition
+        </h2>
+        <p className="mx-auto mt-3 max-w-xl text-center text-neutral-400">
+          Everything you need to practice, compete, and climb — in one place.
+        </p>
 
-        {/* Recent Battles */}
-        {matches.length > 0 && (
-          <section className="mt-10">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-neutral-500">Recent Battles</h2>
-            <div className="space-y-2">
-              {matches.map((m) => {
-                const mp = m.cb_match_players?.[0];
-                const won = m.winner_id === user.userId;
-                const passed = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_passed ?? 0), 0);
-                const totalTests = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_total ?? 0), 0);
-                const titles = (m.cb_match_problems ?? [])
-                  .slice()
-                  .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                  .map((p) => p.cb_problems?.title)
-                  .filter(Boolean) as string[];
-                const solo = m.room_code === null;
-                return (
-                  <div key={m.id} className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 transition-all duration-200 hover:border-neutral-700">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2.5">
-                        <span className={`rounded-md px-2.5 py-1 text-xs font-bold ${solo ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20"}`}>
-                          {solo ? "SOLO" : "BATTLE"}
-                        </span>
-                        <span className="truncate font-medium text-neutral-200" title={titles.length > 0 ? titles.join(" · ") : undefined}>
-                          {titles.length > 1
-                            ? `${titles[0]} +${titles.length - 1} more`
-                            : titles[0] ?? m.cb_problems?.title ?? "Unknown"}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 text-xs text-neutral-500">{new Date(m.created_at).toLocaleString()}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {totalTests > 0 && <span className="text-sm text-neutral-400">{passed}/{totalTests}</span>}
-                      {mp?.xp_gained != null && <span className="text-sm font-bold text-emerald-400">+{mp.xp_gained} XP</span>}
-                      {!solo && mp?.elo_after != null && (
-                        <span className={`rounded-md px-2.5 py-1 text-xs font-bold ${won ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20"}`}>
-                          {won ? "WIN" : "LOSS"}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((f) => (
+            <div
+              key={f.title}
+              className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6 transition-all duration-200 hover:border-emerald-500/30 hover:bg-neutral-900/80"
+            >
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                <f.icon className="h-6 w-6" />
+              </span>
+              <h3 className="mt-4 text-lg font-bold text-neutral-100">{f.title}</h3>
+              <p className="mt-2 text-sm text-neutral-400 leading-relaxed">{f.desc}</p>
             </div>
-          </section>
-        )}
-      </div>
-    </div>
-  );
-}
+          ))}
+        </div>
+      </section>
 
-function Stat({ label, value, color }: { label: string; value: number | string; color: string }) {
-  return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-5 transition-all duration-200 hover:border-neutral-700">
-      <p className="text-3xl font-extrabold" style={{ color, textShadow: `0 0 20px ${color}40` }}>{value}</p>
-      <p className="mt-1.5 text-xs uppercase tracking-wide text-neutral-500 font-medium">{label}</p>
+      {/* CTA band */}
+      <section className="mx-auto max-w-5xl px-6 pb-24">
+        <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-neutral-900/60 p-10 sm:p-14 text-center">
+          <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[90px]" />
+          <div className="relative z-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-100">
+              Ready to enter the arena?
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-neutral-400">
+              Create your free account, pick your problems, and challenge the world.
+            </p>
+            <Link
+              href={ctaHref}
+              className="mt-6 inline-flex px-10 py-4 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105"
+              style={{ boxShadow: "0 0 40px rgba(34,197,94,0.3)" }}
+            >
+              {session ? "Battle Now ⚔️" : "Create Free Account"}
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

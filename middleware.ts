@@ -11,10 +11,10 @@ export async function middleware(request: NextRequest) {
   const authed = Boolean(session);
 
   if (authed && (path.startsWith("/login") || path.startsWith("/signup"))) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (!authed && (path === "/" || path.startsWith("/battle"))) {
+  if (!authed && (path === "/dashboard" || path.startsWith("/battle"))) {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("next", path);
     return NextResponse.redirect(redirectUrl);

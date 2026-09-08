@@ -277,7 +277,7 @@ export default function BattlePage() {
         <div className="flex w-full min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
           <h1 className="text-xl font-bold">Room {match.room_code}</h1>
           <p className="text-neutral-400">You are not a participant in this room.</p>
-          <button onClick={() => router.push("/")}
+          <button onClick={() => router.push("/dashboard")}
             className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Dashboard</button>
         </div>
       );
@@ -297,7 +297,7 @@ export default function BattlePage() {
             players={players}
             profiles={profiles}
             meId={meId!}
-            onExit={() => router.push("/")}
+            onExit={() => router.push("/dashboard")}
           />
         </div>
       );
@@ -460,7 +460,7 @@ export default function BattlePage() {
     if (opp) {
       await acceptDefeat(match.id);
     }
-    router.push("/");
+    router.push("/dashboard");
   }
 }
 

@@ -17,7 +17,7 @@ export async function requireAdmin() {
     .single();
 
   if (!profile || profile.role !== "admin") {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   return { userId: session.userId, username: session.username };

@@ -24,7 +24,7 @@ export default async function Navbar() {
 
   const links = session
     ? [
-        { href: "/", label: "Dashboard", icon: "home" },
+        { href: "/dashboard", label: "Dashboard", icon: "home" },
         { href: "/leaderboard", label: "Leaderboard", icon: "trophy" },
         { href: "/history", label: "History", icon: "history" },
         { href: "/profile", label: "Profile", icon: "user" },
@@ -38,7 +38,7 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-emerald-500/10 bg-black/80 backdrop-blur-sm">
       <div className="flex h-14 items-center px-4 md:px-6">
-        <Link href="/" className="mr-4 flex shrink-0 items-center gap-2">
+        <Link href={session ? "/dashboard" : "/"} className="mr-4 flex shrink-0 items-center gap-2">
           <LogoMark size="sm" />
           <span className="truncate text-lg font-bold tracking-tight">
             <span className="text-neutral-100">Code</span>
