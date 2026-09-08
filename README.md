@@ -191,6 +191,7 @@ sequenceDiagram
 - **Sandboxed execution.** User code runs in an isolated `new Function` scope (no DOM, no `localStorage`, no network) with a per-test timeout.
 - **Race-safe submissions.** A unique partial index allows only one final submission per player per problem, so simultaneous submits can't double-score.
 - **Shared identity.** The `users` table is shared with **Interview Handbook**, so a single account works across both apps.
+- **Shared session (optional).** With `COOKIE_DOMAIN=.tejaverse.org` set in production, the same JWT session cookie is shared, so signing in to one app keeps you signed in to the other. Interview Handbook links to Code Battle from its navbar.
 
 ---
 
@@ -433,6 +434,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key (safe to expose; protected by RLS) |
 | `SESSION_SECRET` | JWT signing secret (must match Interview Handbook) |
+| `COOKIE_DOMAIN` | Optional — set to `.tejaverse.org` in production to share the session cookie between Code Battle and Interview Handbook (leave unset on localhost) |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID (Continue with Google) |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 | `GOOGLE_BUG_REPORT_SCRIPT_URL` | Google Apps Script web app URL that logs bug reports to a Google Sheet |
