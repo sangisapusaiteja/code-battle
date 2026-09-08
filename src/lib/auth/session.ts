@@ -7,16 +7,19 @@ const SESSION_COOKIE = "cb_session";
 export async function setSessionCookie(payload: SessionPayload) {
   const token = await createSessionToken(payload);
   const cookieStore = await cookies();
+  const domain = process.env.COOKIE_DOMAIN;
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
+    ...(domain ? { domain } : {}),
   });
 }
 
 export async function clearSessionCookie() {
+  const domain = process.env.COOKIE_DOMAIN;
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, "", {
     httpOnly: true,
@@ -24,6 +27,7 @@ export async function clearSessionCookie() {
     sameSite: "lax",
     path: "/",
     maxAge: 0,
+    ...(domain ? { domain } : {}),
   });
 }
 
