@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BookOpen } from "lucide-react";
 import LogoMark from "./LogoMark";
 import NavLinks from "./NavLinks";
 import ThemeToggle from "./ThemeToggle";
@@ -48,6 +49,15 @@ export default async function Navbar() {
         {session ? <NavLinks links={links} /> : <div className="hidden flex-1 lg:block" />}
 
         <div className="ml-auto flex items-center gap-2 pl-3">
+          <a
+            href="https://interviewhandbook.tejaverse.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-neutral-700 px-3 text-sm font-medium text-neutral-300 transition-colors duration-200 hover:border-emerald-500/40 hover:text-emerald-400"
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Interview Handbook</span>
+          </a>
           <BugReport triggerClassName="inline-flex h-9 items-center gap-1.5 rounded-md border border-neutral-700 px-3 text-sm font-medium text-neutral-300 transition-colors duration-200 hover:border-emerald-500/40 hover:text-emerald-400" />
           <ThemeToggle />
           {session && (
