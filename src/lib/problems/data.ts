@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 export interface Problem {
@@ -57,3 +58,14 @@ export async function getTestCases(problemId: string): Promise<TestCase[]> {
     .order("sort_order", { ascending: true });
   return (data ?? []) as TestCase[];
 }
+
+/** Distinct problem categories, alphabetically — same order the dashboard groups them in. */
+export const listCategories = cache(async (): Promise<string[]> => {
+  const supabase = await createClient();
+  const { data } = await supabase.from("cb_problems").select("category");
+  const categories = new Set<string>();
+  for (const row of (data ?? []) as { category: string | null }[]) {
+    if (row.category) categories.add(row.category);
+  }
+  return Array.from(categories).sort((a, b) => a.localeCompare(b));
+});

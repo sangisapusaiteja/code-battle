@@ -28,6 +28,14 @@ body {
   background: rgba(34, 197, 94, 0.3);
 }
 
+/* Scrollable areas that shouldn't advertise a scrollbar (navbar category strip) */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Focus ring ─────────────────────────────────────── */
 
 :focus-visible {

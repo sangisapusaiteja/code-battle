@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
+import { Bug } from "lucide-react";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -16,7 +17,13 @@ const BUG_TYPES = [
 
 const emptySubscribe = () => () => {};
 
-export default function BugReport({ triggerClassName = "" }: { triggerClassName?: string }) {
+export default function BugReport({
+  triggerClassName = "",
+  iconOnly = false,
+}: {
+  triggerClassName?: string;
+  iconOnly?: boolean;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
@@ -74,9 +81,11 @@ export default function BugReport({ triggerClassName = "" }: { triggerClassName?
     <>
       <button
         onClick={() => setOpen(true)}
+        aria-label="Report a bug"
+        title="Report a bug"
         className={triggerClassName || "text-xs font-medium text-neutral-500 transition-colors duration-200 hover:text-emerald-400"}
       >
-        🐛 Report a bug
+        {iconOnly ? <Bug className="h-4 w-4" /> : "🐛 Report a bug"}
       </button>
 
       {open &&

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { categorySlug } from "@/lib/utils";
 
 type Problem = {
   id: string;
@@ -16,6 +17,15 @@ type GroupBy = "none" | "difficulty" | "category" | "alpha";
 export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
   const [groupBy, setGroupBy] = useState<GroupBy>("category");
   const [search, setSearch] = useState("");
+
+  // Arriving from a navbar category link (/dashboard#slug): jump to that section
+  // once the rows are mounted, since the hash scroll can't find them earlier.
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const section = document.getElementById(hash);
+    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   const q = search.trim().toLowerCase();
   const visible = q
@@ -117,7 +127,11 @@ export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
       ) : (
         <div className="space-y-6">
           {grouped!.map(([key, items]) => (
-            <div key={key}>
+            <div
+              key={key}
+              id={groupBy === "category" ? categorySlug(key) : undefined}
+              className="scroll-mt-20"
+            >
               <div className="flex items-center gap-2 mb-3">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400">{key}</h3>
                 <span className="text-xs text-neutral-600">({items.length})</span>
