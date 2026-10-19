@@ -418,8 +418,8 @@ This preserves your full rating history for the profile chart, while the aggrega
 ### Install
 
 ```bash
-git clone https://github.com/sangisapusaiteja/code-battle.git
-cd code-battle
+git clone https://github.com/sangisapusaiteja/codeBattle.git
+cd codeBattle
 npm install
 ```
 
