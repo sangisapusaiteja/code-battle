@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { Bug } from "lucide-react";
+import { Bug, CheckCircle2 } from "lucide-react";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -85,7 +85,14 @@ export default function BugReport({
         title="Report a bug"
         className={triggerClassName || "text-xs font-medium text-neutral-500 transition-colors duration-200 hover:text-emerald-400"}
       >
-        {iconOnly ? <Bug className="h-4 w-4" /> : "🐛 Report a bug"}
+        {iconOnly ? (
+          <Bug className="h-4 w-4" />
+        ) : (
+          <span className="inline-flex items-center gap-1.5">
+            <Bug className="h-3.5 w-3.5" />
+            Report a bug
+          </span>
+        )}
       </button>
 
       {open &&
@@ -98,14 +105,17 @@ export default function BugReport({
           >
             {status === "success" ? (
               <div className="flex flex-col items-center gap-2 py-6 text-center">
-                <span className="text-3xl">✅</span>
-                <p className="text-sm font-bold text-neutral-100">Bug report submitted!</p>
+                <CheckCircle2 className="h-8 w-8 text-emerald-400" />
+                <p className="text-sm font-bold text-neutral-100">Bug report submitted</p>
                 <p className="text-xs text-neutral-500">Thanks for helping improve Code Battle.</p>
               </div>
             ) : (
               <>
                 <div className="mb-4">
-                  <h2 className="text-base font-bold text-neutral-100">🐛 Report a Bug</h2>
+                  <h2 className="flex items-center gap-2 text-base font-bold text-neutral-100">
+                    <Bug className="h-4 w-4 text-emerald-400" />
+                    Report a Bug
+                  </h2>
                   <p className="mt-0.5 text-xs text-neutral-400">Found something broken? Let us know.</p>
                 </div>
 

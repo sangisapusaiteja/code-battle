@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface QuitSessionProps {
   label?: string;
@@ -30,12 +31,9 @@ export default function QuitSession({
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="px-3 py-1.5 text-xs font-bold rounded-md border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5"
-      >
+      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
         {label}
-      </button>
+      </Button>
 
       {open && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4">
@@ -46,20 +44,22 @@ export default function QuitSession({
             <h2 className="text-xl font-bold text-neutral-100">{title}</h2>
             <p className="mt-3 text-sm text-neutral-400">{message}</p>
             <div className="mt-8 flex gap-4">
-              <button
+              <Button
+                variant="outline"
+                className="flex-1"
                 onClick={() => setOpen(false)}
                 disabled={quitting}
-                className="flex-1 py-3 text-sm font-semibold rounded-xl border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50"
               >
                 Keep Coding
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                className="flex-1"
                 onClick={handleConfirm}
                 disabled={quitting}
-                className="flex-1 py-3 text-sm font-bold rounded-xl border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5 disabled:opacity-50"
               >
                 {quitting ? "Quitting…" : confirmLabel}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

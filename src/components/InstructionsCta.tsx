@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Check, Swords } from "lucide-react";
 import { RULES_NEXT_KEY, RULES_PASSED_KEY } from "@/lib/rules";
+import { Button } from "@/components/ui/button";
 import { useSyncExternalStore } from "react";
 
 const emptySubscribe = () => () => {};
@@ -32,11 +34,18 @@ export default function InstructionsCta() {
   }
 
   return (
-    <button
-      onClick={go}
-      className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105"
-    >
-      {pending ? "✓ I've read it — continue to my game" : "⚔️ Enter the Arena"}
-    </button>
+    <Button size="lg" onClick={go}>
+      {pending ? (
+        <>
+          <Check className="h-4 w-4" />
+          I&apos;ve read it — continue to my game
+        </>
+      ) : (
+        <>
+          <Swords className="h-4 w-4" />
+          Enter the Arena
+        </>
+      )}
+    </Button>
   );
 }

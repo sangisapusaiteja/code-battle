@@ -15,7 +15,8 @@ import { submitSolo } from "@/app/match/actions";
 import TestResults from "@/components/TestResults";
 import SampleCases from "@/components/SampleCases";
 import LogoMark from "@/components/LogoMark";
-import FullscreenGate from "@/components/FullscreenGate";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
+import { Button } from "@/components/ui/button";
 import QuitSession from "@/components/QuitSession";
 import RulesGate from "@/components/RulesGate";
 import type { TestRunResult } from "@/types";
@@ -53,7 +54,7 @@ export default function SoloPage() {
   if (error) return (
     <div className="flex w-full min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
       <p className="text-neutral-400">{error}</p>
-      <button onClick={() => router.push("/play")} className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Arena</button>
+      <Button size="lg" onClick={() => router.push("/play")}>Back to Arena</Button>
     </div>
   );
 
@@ -80,7 +81,6 @@ export default function SoloPage() {
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-black">
-      <FullscreenGate />
       <RulesGate />
       {/* Header */}
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-emerald-500/5 bg-black px-4">
@@ -88,7 +88,7 @@ export default function SoloPage() {
           <LogoMark size="xs" />
           <div className="h-4 w-px bg-neutral-700" />
           <span className="text-sm font-semibold text-neutral-200">{problem.title}</span>
-          <DifficultyBadge d={problem.difficulty} />
+          <DifficultyBadge difficulty={problem.difficulty} />
         </div>
         <div className="flex items-center gap-3">
           <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 text-xs font-bold">SOLO PRACTICE</span>
@@ -126,14 +126,12 @@ export default function SoloPage() {
               <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">Test Results</span>
               <div className="flex items-center gap-3">
                 {xpGained !== null && <span className="text-sm font-bold text-emerald-400">+{xpGained} XP</span>}
-                <button onClick={handleRun} disabled={running}
-                  className="px-5 py-1.5 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-40">
+                <Button variant="outline" onClick={handleRun} disabled={running}>
                   {running ? "Running…" : "Run"}
-                </button>
-                <button onClick={handleSubmit} disabled={submitting || submitted}
-                  className="px-5 py-1.5 text-sm font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 disabled:opacity-40 disabled:hover:scale-100">
+                </Button>
+                <Button onClick={handleSubmit} disabled={submitting || submitted}>
                   {submitted ? "Submitted" : submitting ? "Submitting…" : "Submit"}
-                </button>
+                </Button>
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-4 font-mono text-xs">
@@ -155,10 +153,9 @@ export default function SoloPage() {
             <p className="mt-3 text-neutral-400">
               {xpGained && xpGained > 0 ? `You earned +${xpGained} XP` : "Try again to earn XP."}
             </p>
-            <button onClick={() => router.push("/dashboard")}
-              className="mt-6 w-full py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
+            <Button size="lg" className="mt-6 w-full" onClick={() => router.push("/dashboard")}>
               Back to Dashboard
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -166,7 +163,3 @@ export default function SoloPage() {
   );
 }
 
-function DifficultyBadge({ d }: { d: string }) {
-  const cls = d === "easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : d === "medium" ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20";
-  return <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${cls}`}>{d}</span>;
-}

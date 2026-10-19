@@ -1,5 +1,7 @@
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { PageShell, PageHeader } from "@/components/ui/page-shell";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata = { title: "History — CodeBattle" };
 export const dynamic = "force-dynamic";
@@ -33,67 +35,57 @@ export default async function HistoryPage() {
   const isSolo = (m: (typeof rows)[number]) => m.room_code === null;
 
   return (
-    <div className="w-full min-h-screen px-6 sm:px-10 lg:px-14">
-      <div className="w-full px-6 sm:px-10 lg:px-14 py-8">
-        <h1 className="text-3xl font-extrabold">
-          <span className="text-emerald-400" style={{ textShadow: "0 0 20px rgba(34,197,94,0.3)" }}>Battle History</span>
-        </h1>
+    <PageShell className="min-h-screen">
+      <PageHeader title="Battle History" />
 
-        <div className="mt-2 mb-6 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
-
-        <div className="flex gap-3 mb-6">
-          <span className="rounded-full bg-neutral-900 border border-neutral-800 px-4 py-1.5 text-xs font-medium text-neutral-300">{rows.length} total</span>
-          <span className="rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-4 py-1.5 text-xs font-bold">{rows.filter(isSolo).length} solo</span>
-          <span className="rounded-full bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20 px-4 py-1.5 text-xs font-bold">{rows.filter((m) => !isSolo(m)).length} battles</span>
-        </div>
-
-        {rows.length === 0 ? (
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6 text-center">
-            <p className="text-sm text-neutral-500">No battles yet. Head to the arena and start competing.</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {rows.map((m) => {
-              const mp = m.cb_match_players?.[0];
-              const won = m.winner_id === user.userId;
-              const passed = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_passed ?? 0), 0);
-              const totalTests = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_total ?? 0), 0);
-              const titles = (m.cb_match_problems ?? [])
-                .slice()
-                .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                .map((p) => p.cb_problems?.title)
-                .filter(Boolean) as string[];
-              const solo = isSolo(m);
-              return (
-                <div key={m.id} className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 transition-all duration-200 hover:border-neutral-700">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2.5">
-                      <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${solo ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20"}`}>
-                        {solo ? "SOLO" : "BATTLE"}
-                      </span>
-                      <span className="truncate font-medium text-neutral-200" title={titles.length > 0 ? titles.join(" · ") : undefined}>
-                        {titles.length > 1
-                          ? `${titles[0]} +${titles.length - 1} more`
-                          : titles[0] ?? m.cb_problems?.title ?? "Unknown"}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-xs text-neutral-500">{new Date(m.created_at).toLocaleString()}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    {totalTests > 0 && <span className="text-sm text-neutral-400">{passed}/{totalTests}</span>}
-                    {mp?.xp_gained != null && <span className="text-sm font-bold text-emerald-400">+{mp.xp_gained} XP</span>}
-                    {!solo && mp?.elo_after != null && (
-                      <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${won ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20"}`}>
-                        {won ? "WIN" : "LOSS"}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+      <div className="mb-6 flex flex-wrap gap-3">
+        <Badge tone="neutral">{rows.length} total</Badge>
+        <Badge tone="accent">{rows.filter(isSolo).length} solo</Badge>
+        <Badge tone="warn">{rows.filter((m) => !isSolo(m)).length} battles</Badge>
       </div>
-    </div>
+
+      {rows.length === 0 ? (
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-6 text-center">
+          <p className="text-sm text-neutral-500">No battles yet. Head to the arena and start competing.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((m) => {
+            const mp = m.cb_match_players?.[0];
+            const won = m.winner_id === user.userId;
+            const passed = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_passed ?? 0), 0);
+            const totalTests = (m.cb_submissions ?? []).reduce((a, s) => a + (s.tests_total ?? 0), 0);
+            const titles = (m.cb_match_problems ?? [])
+              .slice()
+              .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+              .map((p) => p.cb_problems?.title)
+              .filter(Boolean) as string[];
+            const solo = isSolo(m);
+            return (
+              <div key={m.id} className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/60 px-5 py-4 transition-colors duration-200 hover:border-neutral-700">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <Badge tone={solo ? "accent" : "warn"}>{solo ? "SOLO" : "BATTLE"}</Badge>
+                    <span className="truncate font-medium text-neutral-200" title={titles.length > 0 ? titles.join(" · ") : undefined}>
+                      {titles.length > 1
+                        ? `${titles[0]} +${titles.length - 1} more`
+                        : titles[0] ?? m.cb_problems?.title ?? "Unknown"}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-xs text-neutral-500">{new Date(m.created_at).toLocaleString()}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  {totalTests > 0 && <span className="text-sm text-neutral-400">{passed}/{totalTests}</span>}
+                  {mp?.xp_gained != null && <span className="text-sm font-bold text-emerald-400">+{mp.xp_gained} XP</span>}
+                  {!solo && mp?.elo_after != null && (
+                    <Badge tone={won ? "accent" : "danger"}>{won ? "WIN" : "LOSS"}</Badge>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </PageShell>
   );
 }

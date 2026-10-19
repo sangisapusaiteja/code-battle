@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signUp, type AuthResult } from "@/app/auth/actions";
 import PasswordInput from "@/components/PasswordInput";
 import AuthShell from "@/components/auth/AuthShell";
+import { Button } from "@/components/ui/button";
 
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState<AuthResult, FormData>(signUp, undefined);
@@ -45,13 +46,9 @@ export default function SignupPage() {
             <PasswordInput name="password" autoComplete="new-password" required minLength={8} />
           </label>
 
-          <button
-            type="submit"
-            disabled={pending}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 text-sm font-bold text-white shadow-[0_18px_40px_-18px_rgba(34,197,94,0.6)] transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" size="lg" className="w-full" disabled={pending}>
             Create account
-          </button>
+          </Button>
 
           <p className="text-sm text-neutral-400">
             Already a player?{" "}

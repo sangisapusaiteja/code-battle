@@ -33,9 +33,11 @@ import {
 } from "@/components/ui/select";
 import TestResults from "@/components/TestResults";
 import SampleCases from "@/components/SampleCases";
-import FullscreenGate from "@/components/FullscreenGate";
 import RulesGate from "@/components/RulesGate";
 import Avatar from "@/components/Avatar";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
+import { Button } from "@/components/ui/button";
+import { Check, Flag } from "lucide-react";
 import type { TestRunResult } from "@/types";
 
 export default function BattlePage() {
@@ -258,8 +260,7 @@ export default function BattlePage() {
         <div className="flex w-full min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
           <h1 className="text-xl font-bold" style={{ textShadow: "0 0 15px rgba(34,197,94,0.3)" }}>Room {code}</h1>
           <p className="text-neutral-400">{error}</p>
-          <button onClick={() => router.push("/play")}
-            className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Arena</button>
+          <Button size="lg" onClick={() => router.push("/play")}>Back to Arena</Button>
         </div>
       );
     }
@@ -277,8 +278,7 @@ export default function BattlePage() {
         <div className="flex w-full min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
           <h1 className="text-xl font-bold">Room {match.room_code}</h1>
           <p className="text-neutral-400">You are not a participant in this room.</p>
-          <button onClick={() => router.push("/dashboard")}
-            className="px-8 py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Back to Dashboard</button>
+          <Button size="lg" onClick={() => router.push("/dashboard")}>Back to Dashboard</Button>
         </div>
       );
     }
@@ -346,7 +346,6 @@ export default function BattlePage() {
 
   return (
     <>
-      <FullscreenGate context="battle" />
       <RulesGate />
       {screen}
     </>
@@ -513,18 +512,16 @@ function TopBar({
       </div>
       <div className="flex items-center gap-3">
         {canStart && onStart && (
-          <button onClick={onStart}
-            className="px-6 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
+          <Button onClick={onStart}>
             Start Match
-          </button>
+          </Button>
         )}
         {!hasOpponent && isHost && (
           <span className="text-xs text-neutral-500">Share: <span className="font-mono font-bold text-emerald-400">{match.room_code}</span></span>
         )}
-        <button onClick={onQuit}
-          className="px-4 py-2.5 text-sm font-semibold rounded-lg border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5">
+        <Button variant="danger" onClick={onQuit}>
           Quit
-        </button>
+        </Button>
       </div>
     </header>
   );
@@ -535,7 +532,7 @@ function ProblemPanel({ problem, testCases }: { problem: Problem; testCases: Tes
     <aside className="w-80 min-h-0 shrink-0 overflow-y-auto border-r border-emerald-500/5 bg-black p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-neutral-100">{problem.title}</h2>
-        <DifficultyBadge d={problem.difficulty} />
+        <DifficultyBadge difficulty={problem.difficulty} />
       </div>
       <p className="mt-1 text-xs text-neutral-500">{problem.category}</p>
       <div className="mt-4 text-sm leading-relaxed text-neutral-300"><p>{problem.description}</p></div>
@@ -603,7 +600,7 @@ function PlayerCard({ label, profile, submission, finished, isMe }: {
           <span className="text-xs text-neutral-400">{submission.tests_passed ?? 0}/{submission.tests_total ?? 0}</span></>
         ) : <span className="text-xs text-neutral-600">No submission yet</span>}
       </div>
-      {finished && <div className="mt-2 text-xs font-bold text-emerald-400">✓ FINISHED</div>}
+      {finished && <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-emerald-400"><Check className="h-3.5 w-3.5" /> FINISHED</div>}
     </div>
   );
 }
@@ -618,20 +615,17 @@ function ConsolePanel({ runResult, running, submitting, submitted, status, onRun
       <div className="flex h-9 shrink-0 items-center justify-between border-b border-neutral-800 px-4">
         <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">Test Results</span>
         <div className="flex gap-3">
-          <button onClick={onRun} disabled={!canAct || running || submitted}
-            className="px-4 py-1.5 text-sm font-semibold rounded-lg border border-neutral-700 text-neutral-200 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-40">
+          <Button variant="outline" size="sm" onClick={onRun} disabled={!canAct || running || submitted}>
             {running ? "Running…" : "Run"}
-          </button>
+          </Button>
           {submitted ? (
             hasNext ? (
-              <button onClick={onNext}
-                className="px-4 py-1.5 text-sm font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">Next Problem</button>
-            ) : <span className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-4 py-1.5 text-sm font-bold">Finished</span>
+              <Button size="sm" onClick={onNext}>Next Problem</Button>
+            ) : <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-4 py-1.5 text-sm font-bold text-emerald-400">Finished</span>
           ) : (
-            <button onClick={onSubmit} disabled={!canAct || submitting}
-              className="px-4 py-1.5 text-sm font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 disabled:opacity-40 disabled:hover:scale-100">
+            <Button size="sm" onClick={onSubmit} disabled={!canAct || submitting}>
               {submitting ? "Submitting…" : "Submit"}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -651,14 +645,12 @@ function QuitConfirmModal({ quitting, onCancel, onConfirm }: { quitting: boolean
         <h2 className="text-xl font-bold text-neutral-100">Quit the Battle?</h2>
         <p className="mt-3 text-sm text-neutral-400">You will be counted as the loser and your opponent wins.</p>
         <div className="mt-8 flex gap-4">
-          <button onClick={onCancel} disabled={quitting}
-            className="flex-1 py-3 text-sm font-semibold rounded-xl border border-neutral-700 text-neutral-300 transition-all duration-200 hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-50">
+          <Button variant="outline" className="flex-1" onClick={onCancel} disabled={quitting}>
             Keep Coding
-          </button>
-          <button onClick={onConfirm} disabled={quitting}
-            className="flex-1 py-3 text-sm font-bold rounded-xl border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5 disabled:opacity-50">
+          </Button>
+          <Button variant="danger" className="flex-1" onClick={onConfirm} disabled={quitting}>
             {quitting ? "Quitting…" : "Forfeit"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -675,7 +667,7 @@ function WaitingScreen({ players, profiles, meId, onQuit }: {
   return (
     <div className="flex w-full min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-emerald-500/20 bg-neutral-900" style={{ boxShadow: "0 0 30px rgba(34,197,94,0.1)", animation: "pulse 2s ease-in-out infinite" }}>
-        <span className="text-4xl">🏁</span>
+        <Flag className="h-10 w-10 text-emerald-400" />
       </div>
       <div>
         <h1 className="text-3xl font-extrabold text-emerald-400" style={{ textShadow: "0 0 20px rgba(34,197,94,0.4)" }}>You finished!</h1>
@@ -685,10 +677,9 @@ function WaitingScreen({ players, profiles, meId, onQuit }: {
         <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e] animate-pulse" />
         <span className="text-sm text-neutral-300">{oppFinished ? "Tallying results…" : "Opponent is still coding"}</span>
       </div>
-      <button onClick={onQuit}
-        className="px-6 py-2.5 text-sm font-semibold rounded-xl border border-[#ef4444]/30 text-[#ef4444] transition-all duration-200 hover:bg-[#ef4444]/5">
+      <Button variant="danger" onClick={onQuit}>
         Quit
-      </button>
+      </Button>
     </div>
   );
 }
@@ -716,10 +707,9 @@ function ResultPopup({ match, players, profiles, meId, onExit }: {
         <ResultRow label="YOU" username={me?.username ?? "You"} time={myTime} xp={myPlayer?.xp_gained ?? null} highlight={iWon} />
         <ResultRow label="OPPONENT" username={oppProfile?.username ?? "Opponent"} time={oppTime} xp={oppPlayer?.xp_gained ?? null} highlight={!iWon && Boolean(match.winner_id)} />
       </div>
-      <button onClick={onExit}
-        className="mt-8 w-full py-3.5 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105">
+      <Button size="lg" className="mt-8 w-full" onClick={onExit}>
         Back to Dashboard
-      </button>
+      </Button>
     </div>
   );
 }
@@ -748,11 +738,6 @@ function ResultRow({ label, username, time, xp, highlight }: {
       </div>
     </div>
   );
-}
-
-function DifficultyBadge({ d }: { d: string }) {
-  const cls = d === "easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : d === "medium" ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20" : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20";
-  return <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${cls}`}>{d}</span>;
 }
 
 function formatTime(seconds: number) {

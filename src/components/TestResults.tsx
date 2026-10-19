@@ -1,3 +1,4 @@
+import { Check, X } from "lucide-react";
 import type { TestRunResult } from "@/types";
 
 export default function TestResults({ result }: { result: TestRunResult }) {
@@ -23,9 +24,11 @@ export default function TestResults({ result }: { result: TestRunResult }) {
             className={`w-64 shrink-0 rounded-lg border p-3 ${r.pass ? "border-emerald-500/20 bg-emerald-500/5" : "border-[#ef4444]/20 bg-[#ef4444]/5"}`}
           >
             <div className="mb-2 flex items-center gap-2">
-              <span className={`text-sm font-bold ${r.pass ? "text-emerald-400" : "text-[#ef4444]"}`}>
-                {r.pass ? "✓" : "✗"}
-              </span>
+              {r.pass ? (
+                <Check className="h-4 w-4 text-emerald-400" />
+              ) : (
+                <X className="h-4 w-4 text-[#ef4444]" />
+              )}
               <span className="text-xs font-semibold text-neutral-500">Test Case {i + 1}</span>
               {r.pass ? (
                 <span className="ml-auto rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400">

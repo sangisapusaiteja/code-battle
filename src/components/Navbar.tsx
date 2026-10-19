@@ -1,5 +1,5 @@
 import Link from "next/link";
-import CategoryNav from "./CategoryNav";
+import NavMenu from "./NavMenu";
 import ThemeToggle from "./ThemeToggle";
 import BugReport from "./BugReport";
 import UserMenu from "./UserMenu";
@@ -48,9 +48,9 @@ export default async function Navbar() {
           </span>
         </Link>
 
-        <CategoryNav categories={categories} signedIn={Boolean(session)} />
+        <NavMenu categories={categories} signedIn={Boolean(session)} />
 
-        <div className="ml-auto flex items-center gap-2 pl-3">
+        <div className="flex items-center gap-2 pl-3">
           <BugReport
             iconOnly
             triggerClassName="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-neutral-400 transition-colors duration-200 hover:bg-emerald-500/10 hover:text-neutral-100"

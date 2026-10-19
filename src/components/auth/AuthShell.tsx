@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Swords, Trophy, Target } from "lucide-react";
 import LogoMark from "@/components/LogoMark";
 
 type AuthShellProps = {
@@ -14,9 +15,9 @@ const highlights = [
 ];
 
 const features = [
-  { icon: "⚔️", title: "Real-time Duels", desc: "Same problem, same clock — fastest correct solution wins." },
-  { icon: "🏆", title: "Elo & XP", desc: "Earn XP for every solve and move up the ranks with each victory." },
-  { icon: "🧠", title: "Sharpen Skills", desc: "Practice any problem solo, or jump straight into a match." },
+  { icon: Swords, title: "Real-time Duels", desc: "Same problem, same clock — fastest correct solution wins." },
+  { icon: Trophy, title: "Elo & XP", desc: "Earn XP for every solve and move up the ranks with each victory." },
+  { icon: Target, title: "Sharpen Skills", desc: "Practice any problem solo, or jump straight into a match." },
 ];
 
 export default function AuthShell({ title, description, children }: Readonly<AuthShellProps>) {
@@ -37,7 +38,8 @@ export default function AuthShell({ title, description, children }: Readonly<Aut
 
           <div className="mt-6 max-w-xl">
             <p className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
-              ⚔️ The competitive coding arena
+              <Swords className="h-3.5 w-3.5" />
+              The competitive coding arena
             </p>
             <h1 className="mt-4 text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-neutral-50">
               {title}
@@ -50,7 +52,9 @@ export default function AuthShell({ title, description, children }: Readonly<Aut
           <div className="mt-6 grid max-w-2xl gap-3 sm:grid-cols-3">
             {features.map((f) => (
               <div key={f.title} className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 transition-colors duration-200 hover:border-emerald-500/20">
-                <span className="text-lg">{f.icon}</span>
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                  <f.icon className="h-4 w-4" />
+                </span>
                 <p className="mt-2.5 text-xs font-semibold text-neutral-100">{f.title}</p>
                 <p className="mt-1.5 text-[11px] leading-relaxed text-neutral-400">{f.desc}</p>
               </div>

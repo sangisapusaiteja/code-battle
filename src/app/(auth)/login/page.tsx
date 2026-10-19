@@ -6,6 +6,7 @@ import Link from "next/link";
 import { login, type AuthResult } from "@/app/auth/actions";
 import PasswordInput from "@/components/PasswordInput";
 import AuthShell from "@/components/auth/AuthShell";
+import { Button } from "@/components/ui/button";
 
 const googleErrors: Record<string, string> = {
   google_unavailable: "Google sign-in is not configured yet. Use username & password for now.",
@@ -61,13 +62,9 @@ function LoginForm() {
             <PasswordInput name="password" autoComplete="current-password" required />
           </label>
 
-          <button
-            type="submit"
-            disabled={pending}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 text-sm font-bold text-white shadow-[0_18px_40px_-18px_rgba(34,197,94,0.6)] transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" size="lg" className="w-full" disabled={pending}>
             Sign in
-          </button>
+          </Button>
 
           {/* Divider */}
           <div className="flex items-center gap-3">

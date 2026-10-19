@@ -10,9 +10,13 @@ import {
   BookOpen,
   Users,
 } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Code Battle — Real-time Coding Battles" };
 export const dynamic = "force-dynamic";
+
+const GUTTER = "px-4 sm:px-6 lg:px-10 xl:px-14";
 
 const features = [
   {
@@ -61,7 +65,16 @@ export default async function LandingPage() {
     username = data?.username ?? null;
   }
 
-  const ctaHref = session ? "/play" : "/signup";
+  // Hero: a signed-in player continues to their dashboard.
+  const continueHref = session ? "/dashboard" : "/signup";
+  // Bottom band: a signed-in player jumps straight into the arena.
+  const battleHref = session ? "/play" : "/signup";
+  const ctaLabel =
+    session && username
+      ? `Continue as ${username}`
+      : session
+        ? "Battle Now"
+        : "Get Started — It's Free";
 
   return (
     <div className="w-full">
@@ -70,7 +83,7 @@ export default async function LandingPage() {
         <div className="pointer-events-none absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-emerald-500/10 blur-[130px]" />
         <div className="pointer-events-none absolute -bottom-40 right-1/4 h-[380px] w-[380px] rounded-full bg-emerald-400/5 blur-[120px]" />
 
-        <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 sm:py-28 text-center">
+        <div className={cn("relative z-10 w-full py-20 text-center sm:py-28", GUTTER)}>
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -79,32 +92,39 @@ export default async function LandingPage() {
             Now live · Compete in real time
           </span>
 
-          <h1 className="mt-6 text-4xl sm:text-6xl font-extrabold tracking-tight">
+          <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-extrabold tracking-tight sm:text-6xl">
             <span className="text-neutral-100">Code</span>
-            <span className="text-emerald-400" style={{ textShadow: "0 0 40px rgba(34,197,94,0.4)" }}>
+            <span
+              className="text-emerald-400"
+              style={{ textShadow: "0 0 40px rgba(34,197,94,0.4)" }}
+            >
               Battle
             </span>
             <br />
             <span className="text-neutral-300">your way to the top</span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-400 leading-relaxed">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-neutral-400">
             Practice coding interviews by competing against real developers. Face off on the
             same problems, under the same clock, in real time across devices.
           </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href={ctaHref}
-              className="w-full sm:w-auto px-8 py-4 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105 text-center whitespace-nowrap"
+              href={continueHref}
+              className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
               style={{ boxShadow: "0 0 40px rgba(34,197,94,0.3)" }}
             >
-              {session ? (username ? `Continue as ${username} ⚔️` : "Battle Now ⚔️") : "Get Started — It's Free"}
+              <Swords className="h-5 w-5" />
+              {ctaLabel}
             </Link>
             {!session && (
               <Link
                 href="/login"
-                className="w-full sm:w-auto px-8 py-4 text-base font-semibold rounded-xl border border-emerald-500/30 text-emerald-400 transition-all duration-300 hover:bg-emerald-500/10 hover:scale-105 text-center whitespace-nowrap"
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "lg" }),
+                  "w-full sm:w-auto",
+                )}
               >
                 I have an account
               </Link>
@@ -119,47 +139,48 @@ export default async function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <h2 className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-100">
+      <section className={cn("w-full pb-20", GUTTER)}>
+        <h2 className="text-center text-2xl font-extrabold tracking-tight text-neutral-100 sm:text-3xl">
           Built for the rush of competition
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-neutral-400">
           Everything you need to practice, compete, and climb — in one place.
         </p>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {features.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6 transition-all duration-200 hover:border-emerald-500/30 hover:bg-neutral-900/80"
+              className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6 transition-colors duration-200 hover:border-emerald-500/30 hover:bg-neutral-900/80"
             >
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
                 <f.icon className="h-6 w-6" />
               </span>
               <h3 className="mt-4 text-lg font-bold text-neutral-100">{f.title}</h3>
-              <p className="mt-2 text-sm text-neutral-400 leading-relaxed">{f.desc}</p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-400">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA band */}
-      <section className="mx-auto max-w-5xl px-6 pb-24">
-        <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-neutral-900/60 p-10 sm:p-14 text-center">
+      <section className={cn("w-full pb-24", GUTTER)}>
+        <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-neutral-900/60 p-10 text-center sm:p-14">
           <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[90px]" />
           <div className="relative z-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-100">
+            <h2 className="text-2xl font-extrabold tracking-tight text-neutral-100 sm:text-3xl">
               Ready to enter the arena?
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-neutral-400">
               Create your free account, pick your problems, and challenge the world.
             </p>
             <Link
-              href={ctaHref}
-              className="mt-6 inline-flex px-10 py-4 text-base font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-300 hover:scale-105"
+              href={battleHref}
+              className={cn(buttonVariants({ size: "lg" }), "mt-6")}
               style={{ boxShadow: "0 0 40px rgba(34,197,94,0.3)" }}
             >
-              {session ? "Battle Now ⚔️" : "Create Free Account"}
+              <Swords className="h-5 w-5" />
+              {session ? "Battle Now" : "Create Free Account"}
             </Link>
           </div>
         </div>

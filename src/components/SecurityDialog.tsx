@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2, ShieldCheck, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AccountInfo {
   username: string;
@@ -192,10 +193,11 @@ export default function SecurityDialog({
                 </p>
               )}
 
-              <button
+              <Button
                 type="submit"
+                size="lg"
+                className="w-full"
                 disabled={saving}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-sm font-bold text-white transition-colors duration-200 hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {saving
@@ -203,7 +205,7 @@ export default function SecurityDialog({
                   : info.hasPassword
                     ? "Update password"
                     : "Create password"}
-              </button>
+              </Button>
             </form>
           )}
         </Dialog.Content>

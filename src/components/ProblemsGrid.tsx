@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Search, X } from "lucide-react";
 import { categorySlug } from "@/lib/utils";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 
 type Problem = {
   id: string;
@@ -78,16 +80,16 @@ export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search problems…"
-              className="w-44 sm:w-56 rounded-lg border border-neutral-700 bg-neutral-900/60 py-1.5 pl-8 pr-8 text-xs text-neutral-200 outline-none transition-all duration-200 focus:border-emerald-500/40 placeholder:text-neutral-600"
+              className="w-44 rounded-lg border border-neutral-700 bg-neutral-900/60 py-1.5 pl-8 pr-8 text-xs text-neutral-200 outline-none transition-colors duration-200 focus:border-emerald-500/40 placeholder:text-neutral-600 sm:w-56"
             />
-            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-neutral-500">🔍</span>
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-500" />
             {search && (
               <button
                 onClick={() => setSearch("")}
                 aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-500 transition-colors hover:text-neutral-200"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-neutral-200"
               >
-                ✕
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
@@ -119,7 +121,7 @@ export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
           </button>
         </div>
       ) : groupBy === "none" ? (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {visible.map((p) => (
             <ProblemCard key={p.id} problem={p} />
           ))}
@@ -136,7 +138,7 @@ export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
                 <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-400">{key}</h3>
                 <span className="text-xs text-neutral-600">({items.length})</span>
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {items.map((p) => (
                   <ProblemCard key={p.id} problem={p} />
                 ))}
@@ -150,21 +152,14 @@ export default function ProblemsGrid({ problems }: { problems: Problem[] }) {
 }
 
 function ProblemCard({ problem }: { problem: Problem }) {
-  const cls =
-    problem.difficulty === "easy"
-      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-      : problem.difficulty === "medium"
-        ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/20"
-        : "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20";
-
   return (
     <Link
       href={`/problem/${problem.slug}`}
-      className="group rounded-xl border border-neutral-800 bg-neutral-900/60 p-5 transition-all duration-300 hover:border-emerald-500/20 hover:bg-neutral-900"
+      className="group rounded-xl border border-neutral-800 bg-neutral-900/60 p-5 transition-colors duration-300 hover:border-emerald-500/20 hover:bg-neutral-900"
     >
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-neutral-200 group-hover:text-emerald-400 transition-colors">{problem.title}</span>
-        <span className={`rounded-md px-2.5 py-1 text-xs font-bold border ${cls}`}>{problem.difficulty}</span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate font-semibold text-neutral-200 transition-colors group-hover:text-emerald-400">{problem.title}</span>
+        <DifficultyBadge difficulty={problem.difficulty} />
       </div>
       <p className="mt-2 text-xs text-neutral-500">{problem.category}</p>
     </Link>
